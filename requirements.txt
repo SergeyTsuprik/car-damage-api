@@ -1,11 +1,12 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-ultralytics>=8.1.0
-opencv-python-headless>=4.8.0
 python-multipart==0.0.6
-numpy<2
-pillow>=10.0.0
-torch>=2.0.0
-torchvision>=0.15.0
+ultralytics==8.1.0
+opencv-python-headless==4.8.0.74
+numpy==1.24.3
+torch==2.0.1
+torchvision==0.15.2
+slowapi==0.1.9
 sentry-sdk==1.39.0
-slowapi==0.1.9        # ← ДОБАВИЛИ
+pydantic==2.5.0
+pillow==10.1.0
