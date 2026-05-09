@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarDamage.AI - Детекция повреждений автомобилей</title>
+    <title>KastikCars - Детекция повреждений автомобилей</title>
     <style>
         * {
             margin: 0;
@@ -23,29 +23,33 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            padding: 1rem 2rem;
         }
 
         nav {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 1rem 2rem;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: flex-end;
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
+        .logo-section {
+            background: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .logo-section img {
+            height: 300px;
+            width: auto;
+            object-fit: contain;
         }
 
         .nav-links {
             display: flex;
             gap: 2rem;
             list-style: none;
+            margin-left: auto;
         }
 
         .nav-links a {
@@ -53,6 +57,7 @@
             color: #333;
             cursor: pointer;
             transition: color 0.3s;
+            font-weight: 500;
         }
 
         .nav-links a:hover {
@@ -71,7 +76,7 @@
 
         .hero {
             text-align: center;
-            padding: 6rem 2rem;
+            padding: 4rem 2rem;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
@@ -122,8 +127,8 @@
         }
 
         .btn-secondary:hover {
-            background: white;
-            color: #667eea;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
 
         .demo-section {
@@ -147,6 +152,11 @@
             background: #f0f4ff;
             transition: all 0.3s;
             margin-bottom: 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            width: 100%;
         }
 
         .upload-area:hover {
@@ -163,27 +173,58 @@
             display: none;
         }
 
+        .upload-area-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            pointer-events: none;
+        }
+
         .upload-icon {
             font-size: 3rem;
-            margin-bottom: 1rem;
+            margin: 0;
         }
 
         .upload-area h3 {
-            margin-bottom: 0.5rem;
+            margin: 0;
             color: #333;
         }
 
         .upload-area p {
             color: #999;
             font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .upload-area.has-image {
+            background: transparent;
+            border-color: #5b7cfa;
+            padding: 1rem;
+            min-height: auto;
+            height: auto;
+            width: 100%;
+        }
+
+        .upload-area.has-image:hover {
+            border-color: #4c6ef5;
+        }
+
+        .upload-area.has-image .upload-area-content {
+            display: none;
         }
 
         #imagePreview {
             max-width: 100%;
-            max-height: 400px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
             border-radius: 8px;
-            margin-bottom: 1rem;
             display: none;
+        }
+
+        .upload-area.has-image #imagePreview {
+            display: block;
         }
 
         #canvasContainer {
@@ -197,6 +238,8 @@
             border-radius: 8px;
             border: 1px solid #e0e0e0;
             display: block;
+            max-width: 100%;
+            height: auto;
         }
 
         .analyze-btn {
@@ -372,22 +415,36 @@
             line-height: 1.6;
         }
 
+        .code-examples {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
         .code-example {
             background: #1e1e1e;
             color: #d4d4d4;
             padding: 1.5rem;
             border-radius: 8px;
             overflow-x: auto;
-            margin: 1rem 0;
+            margin: 0;
             font-family: 'Monaco', 'Courier New', monospace;
             font-size: 0.9rem;
+            line-height: 1.5;
         }
 
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .function { color: #dcdcaa; }
+        .comment { color: #6a9955; }
+        .number { color: #b5cea8; }
+
         footer {
-            background: #1e1e1e;
-            color: white;
+            background: white;
+            color: #333;
             padding: 3rem 2rem;
             text-align: center;
+            border-top: 1px solid #e0e0e0;
         }
 
         footer p {
@@ -428,7 +485,6 @@
 <body>
     <header>
         <nav>
-            <div class="logo">🚗 CarDamage.AI</div>
             <ul class="nav-links">
                 <li><a onclick="scrollToSection('demo')">Demo</a></li>
                 <li><a onclick="scrollToSection('pricing')">Pricing</a></li>
@@ -437,9 +493,12 @@
         </nav>
     </header>
 
+    <section class="logo-section">
+        <img src="/static/logo.png" alt="KastikCars">
+    </section>
+
     <section class="hero">
-        <h1>🚗 CarDamage.AI</h1>
-        <p>Оценить повреждение авто за 3 секунды</p>
+        <h1>Оценить повреждение авто за 3 секунды</h1>
         <p style="font-size: 1rem; opacity: 0.8;">Вместо часа работы эксперта — одна фотография. REST API для автоматической детекции повреждений.</p>
         <div class="hero-buttons">
             <button class="btn btn-primary" onclick="scrollToSection('demo')">Попробовать бесплатно</button>
@@ -452,9 +511,11 @@
             <h2>Попробовать прямо сейчас</h2>
             <div class="upload-area" id="uploadArea">
                 <input type="file" id="fileInput" accept="image/*">
-                <div class="upload-icon">📸</div>
-                <h3>Нажми или загрузи фото авто</h3>
-                <p>PNG, JPG, WebP до 10MB</p>
+                <div class="upload-area-content">
+                    <div class="upload-icon">📸</div>
+                    <h3>Нажми или загрузи фото авто</h3>
+                    <p>PNG, JPG, WebP до 10MB</p>
+                </div>
                 <img id="imagePreview" alt="Preview">
             </div>
             <button class="analyze-btn" id="analyzeBtn">Анализировать</button>
@@ -515,11 +576,11 @@
         <div class="testimonials">
             <div class="testimonial">
                 <h3>🏪 Авто-маркетплейсы</h3>
-                <p><strong>Auto.ru:</strong> автоматизировали приёмку авто.<br><strong>Экономия:</strong> 20 часов/неделю на экспертизе</p>
+                <p><strong>Приёмка авто:</strong> автоматизировали оценку повреждений при поступлении машин.<br><strong>Экономия:</strong> 20 часов/неделю на экспертизе</p>
             </div>
             <div class="testimonial">
                 <h3>🛡️ Страховые компании</h3>
-                <p><strong>Первая БЛ:</strong> быстрая оценка ущерба в полях.<br><strong>Экономия:</strong> $200 на экспертизу за каждый случай</p>
+                <p><strong>Первая оценка:</strong> быстрая оценка ущерба в полях.<br><strong>Экономия:</strong> $200 на экспертизу за каждый случай</p>
             </div>
             <div class="testimonial">
                 <h3>👨‍🔧 Независимые оценщики</h3>
@@ -531,15 +592,6 @@
     <section id="faq" class="container">
         <h2 style="text-align: center; margin-bottom: 2rem;">Частые вопросы</h2>
         <div class="faq">
-            <div class="faq-item">
-                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                    <span>Какая точность модели?</span>
-                    <span>▼</span>
-                </div>
-                <div class="faq-answer">
-                    mAP 0.87 на test датасете из 5,000 фото. Обнаруживает: царапины, вмятины, трещины, разбитое стекло, вмятины на боках.
-                </div>
-            </div>
             <div class="faq-item">
                 <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
                     <span>Как быстро ответ API?</span>
@@ -560,15 +612,6 @@
             </div>
             <div class="faq-item">
                 <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                    <span>Есть ли обучение модели на моих данных?</span>
-                    <span>▼</span>
-                </div>
-                <div class="faq-answer">
-                    Да, в плане Enterprise. Свяжись с нами: support@yourdomain.by
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
                     <span>Где хранятся мои фото?</span>
                     <span>▼</span>
                 </div>
@@ -581,48 +624,47 @@
 
     <section class="container">
         <h2 style="text-align: center; margin-bottom: 2rem;">Примеры использования</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div class="code-examples">
             <div>
                 <h3>🐍 Python</h3>
-                <div class="code-example">import requests
+                <div class="code-example"><span class="keyword">import</span> requests
 
-API_URL = "https://car-damage-api-production.up.railway.app/api/detect"
-API_KEY = "test-free-key"
+API_URL = <span class="string">"https://api.example.com/api/detect"</span>
+API_KEY = <span class="string">"test-free-key"</span>
 
-with open("car.jpg", "rb") as f:
-    files = {"file": f}
-    headers = {"X-API-Key": API_KEY}
-    response = requests.post(API_URL, files=files, headers=headers)
+<span class="keyword">with</span> <span class="function">open</span>(<span class="string">"car.jpg"</span>, <span class="string">"rb"</span>) <span class="keyword">as</span> f:
+    files = {<span class="string">"file"</span>: f}
+    headers = {<span class="string">"X-API-Key"</span>: API_KEY}
+    response = requests.<span class="function">post</span>(API_URL, files=files, headers=headers)
 
-data = response.json()
-print(f"Найдено повреждений: {data['count']}")</div>
+data = response.<span class="function">json</span>()
+<span class="function">print</span>(<span class="string">f"Найдено повреждений: {data['count']}"</span>)</div>
             </div>
             <div>
                 <h3>💻 JavaScript</h3>
-                <div class="code-example">const form = new FormData();
-form.append("file", fileInput.files[0]);
+                <div class="code-example"><span class="keyword">const</span> form = <span class="keyword">new</span> <span class="function">FormData</span>();
+form.<span class="function">append</span>(<span class="string">"file"</span>, fileInput.files[<span class="number">0</span>]);
 
-fetch("https://car-damage-api-production.up.railway.app/api/detect", {
-  method: "POST",
-  headers: {"X-API-Key": "test-free-key"},
+<span class="function">fetch</span>(<span class="string">"https://api.example.com/api/detect"</span>, {
+  method: <span class="string">"POST"</span>,
+  headers: {<span class="string">"X-API-Key"</span>: <span class="string">"test-free-key"</span>},
   body: form
 })
-.then(r => r.json())
-.then(data => console.log(data));</div>
+.<span class="function">then</span>(r => r.<span class="function">json</span>())
+.<span class="function">then</span>(data => <span class="function">console</span>.<span class="function">log</span>(data));</div>
             </div>
-            <div>
+            <div style="margin-top: 1.5rem;">
                 <h3>🔧 cURL</h3>
-                <div class="code-example">curl -X POST "https://car-damage-api-production.up.railway.app/api/detect" \
-  -H "X-API-Key: test-free-key" \
-  -F "file=@car.jpg"</div>
+                <div class="code-example">curl -X POST <span class="string">"https://api.example.com/api/detect"</span> \
+  -H <span class="string">"X-API-Key: test-free-key"</span> \
+  -F <span class="string">"file=@car.jpg"</span></div>
             </div>
         </div>
-        <p style="text-align: center; margin-top: 2rem;">📚 <strong><a href="#" style="color: #5b7cfa; text-decoration: none;">Полная документация API: Swagger UI →</a></strong></p>
     </section>
 
     <footer>
-        <p>support@yourdomain.by | Telegram: @yourname</p>
-        <p>© 2024 CarDamage.AI. Все права защищены.</p>
+        <p>&copy; 2026 KastikCars. Все права защищены.</p>
+        <p>API для детекции повреждений автомобилей</p>
     </footer>
 
     <script>
@@ -641,26 +683,30 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
         const legendContent = document.getElementById('legendContent');
 
         const damageColors = {
-            'Царапина': '#FF6B6B',
-            'Вмятина': '#4ECDC4',
-            'Трещина': '#FFE66D',
-            'Разбитое стекло': '#A8E6CF',
-            'Зеркало повреждено': '#FF8B94',
-            'Фара повреждена': '#C7CEEA',
-            'Бампер повреждён': '#B4A7D6'
+            'door': '#FF1744',
+            'lamp': '#00E5FF',
+            'taillight': '#FF6D00',
+            'wheel': '#9C27B0',
+            'window': '#00FF41',
+            'mirror': '#E600A4',
+            'fender': '#FFD600',
+            'bumper': '#E91E63',
+            'hood': '#1E88E5',
+            'roof': '#00F0FF',
+            'trunk': '#7B1FA2',
+            'windscreen_front': '#FFC400',
+            'windscreen_rear': '#FF7043',
+            'undamaged': '#76FF03'
         };
 
-        // Upload area click
         uploadArea.addEventListener('click', () => fileInput.click());
 
-        // File input change
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 showPreview(e.target.files[0]);
             }
         });
 
-        // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -679,12 +725,11 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
             }
         });
 
-        // Show preview
         function showPreview(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 imagePreview.src = e.target.result;
-                imagePreview.style.display = 'block';
+                uploadArea.classList.add('has-image');
                 analyzeBtn.style.display = 'block';
                 canvasContainer.style.display = 'none';
                 legend.style.display = 'none';
@@ -693,7 +738,6 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
             reader.readAsDataURL(file);
         }
 
-        // Analyze button
         analyzeBtn.addEventListener('click', analyzeImage);
 
         async function analyzeImage() {
@@ -721,8 +765,8 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
 
                 const data = await response.json();
 
-                if (data.results && Array.isArray(data.results)) {
-                    drawResults(data.results);
+                if (data.detections && Array.isArray(data.detections)) {
+                    drawResults(data.detections);
                 } else {
                     throw new Error('Invalid API response format');
                 }
@@ -735,6 +779,7 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
         }
 
         function drawResults(results) {
+            console.log('API Response detections:', results);
             const img = new Image();
             img.onload = () => {
                 resultCanvas.width = img.width;
@@ -745,42 +790,43 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
                 const damages = {};
 
                 results.forEach(result => {
-                    const [x1, y1, x2, y2] = result.bbox;
-                    const className = result.class || 'Неизвестное повреждение';
-                    const color = damageColors[className] || '#FF6B6B';
+                    const bbox = result.bbox;
+                    const x1 = bbox.x1;
+                    const y1 = bbox.y1;
+                    const x2 = bbox.x2;
+                    const y2 = bbox.y2;
+                    
+                    const className = result.class || 'unknown';
+                    const color = damageColors[className] || '#FF00FF';
 
-                    // Draw rectangle
                     ctx.strokeStyle = color;
-                    ctx.lineWidth = 3;
+                    ctx.lineWidth = 2;
                     ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
 
-                    // Draw label background
-                    const label = className;
-                    ctx.font = 'bold 14px Arial';
+                    const label = className.charAt(0).toUpperCase() + className.slice(1).toLowerCase();
+                    ctx.font = 'bold 18px Arial';
                     const textWidth = ctx.measureText(label).width;
+                    
                     ctx.fillStyle = color;
-                    ctx.fillRect(x1, y1 - 25, textWidth + 8, 22);
+                    ctx.fillRect(x1, y1 - 35, textWidth + 12, 32);
 
-                    // Draw label text
-                    ctx.fillStyle = 'white';
-                    ctx.fillText(label, x1 + 4, y1 - 8);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillText(label, x1 + 6, y1 - 12);
 
-                    // Count damages
                     damages[className] = (damages[className] || 0) + 1;
                 });
 
-                // Show canvas and legend
                 canvasContainer.style.display = 'block';
-                legend.style.display = 'block';
+                legend.style.display = 'none';
 
-                // Fill legend
                 legendContent.innerHTML = '';
                 Object.entries(damages).forEach(([className, count]) => {
-                    const color = damageColors[className] || '#FF6B6B';
+                    const color = damageColors[className] || '#FF00FF';
+                    const displayName = className.charAt(0).toUpperCase() + className.slice(1).toLowerCase();
                     legendContent.innerHTML += `
                         <div class="legend-item">
                             <div class="legend-color" style="background: ${color}"></div>
-                            <span>${className} (${count})</span>
+                            <span>${displayName} (${count})</span>
                         </div>
                     `;
                 });
