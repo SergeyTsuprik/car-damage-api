@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
@@ -35,36 +35,50 @@ app = FastAPI(
     description="Detect car parts and damage from images"
 )
 
-# Привязываем limiter к app
-app.state.limiter = limiter
-
 # ==================== 4. CORS ====================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Или конкретные домены: ["https://yourdomain.by", "https://app.yourdomain.by"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ==================== 5. EXCEPTION HANDLER для Rate Limiting ====================
-@app.exception_handler(RateLimitExceeded)
-async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    return JSONResponse(
-        status_code=429,
-        content={"detail": "Too many requests. Please try again later."}
-    )
+# ==================== 5. SLOWAPI MIDDLEWARE ====================
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, lambda request, exc: JSONResponse(
+    status_code=429,
+    content={"detail": "Too many requests. Please try again later."}
+))
 
 # ==================== 6. ЗАГРУЗКА МОДЕЛИ ====================
 print("📦 Загружаю модель...")
-MODEL_PATH = "runs/detect/car_damage/v2_merged/weights/best.pt"
 
-if not Path(MODEL_PATH).exists():
-    print(f"❌ Модель не найдена: {MODEL_PATH}")
-    model = None
-else:
-    model = YOLO(MODEL_PATH)
-    print("✅ Модель загружена!")
+# Ищем модель в разных местах (локально vs Docker)
+possible_paths = [
+    "runs/detect/car_damage/v2_merged/weights/best.pt",
+    "/app/runs/detect/car_damage/v2_merged/weights/best.pt",
+    "./runs/detect/car_damage/v2_merged/weights/best.pt"
+]
+
+MODEL_PATH = None
+model = None
+
+for path in possible_paths:
+    if Path(path).exists():
+        MODEL_PATH = path
+        print(f"✅ Модель найдена: {path}")
+        try:
+            model = YOLO(MODEL_PATH)
+            print("✅ Модель загружена успешно!")
+        except Exception as e:
+            print(f"❌ Ошибка при загрузке модели: {e}")
+        break
+
+if MODEL_PATH is None:
+    print(f"❌ Модель не найдена в следующих путях:")
+    for path in possible_paths:
+        print(f"   - {path}")
 
 # ==================== 7. API КЛЮЧИ ====================
 VALID_KEYS = {
@@ -72,31 +86,26 @@ VALID_KEYS = {
     "test-starter": {"plan": "starter", "limit": 1000, "used": 0},
 }
 
-def verify_api_key(api_key: str = Header(..., alias="X-API-Key")):
-    """Проверяет API ключ"""
-    if api_key not in VALID_KEYS:
-        raise HTTPException(status_code=401, detail="Invalid API key")
-    user = VALID_KEYS[api_key]
-    if user["used"] >= user["limit"]:
-        raise HTTPException(status_code=429, detail="Limit exceeded. Upgrade your plan.")
-    return api_key
-
 # ==================== ENDPOINTS ====================
 
 @app.get("/")
 @limiter.limit("1000/minute")
 async def root(request: Request):
     """Главная страница"""
-    return FileResponse("index.html", media_type="text/html")
+    return FileResponse("static/index.html", media_type="text/html")
 
 @app.get("/health")
 @limiter.limit("1000/minute")
 async def health(request: Request):
     """Health check"""
-    return {"status": "ok", "model_loaded": model is not None}
+    return {
+        "status": "ok",
+        "model_loaded": model is not None,
+        "model_path": MODEL_PATH
+    }
 
 @app.post("/api/detect")
-@limiter.limit("100/minute")  # ← макс 100 запросов в минуту
+@limiter.limit("100/minute")
 async def detect_damage(
     request: Request,
     file: UploadFile = File(...),
@@ -111,11 +120,6 @@ async def detect_damage(
     
     Query params:
         confidence: пороговое значение уверенности (0.0-1.0)
-    
-    Returns:
-        detections: список найденных частей
-        count: кол-во найденных объектов
-        requests_remaining: осталось запросов
     """
     
     # Проверяем ключ
@@ -193,7 +197,6 @@ async def detect_and_save(
 ):
     """
     Детекция + сохранение фото с боксами
-    (для дебага)
     """
     
     if api_key not in VALID_KEYS:
@@ -236,6 +239,15 @@ async def model_info(request: Request):
         "model_path": str(MODEL_PATH)
     }
 
+# ==================== STATIC FILES ====================
+# Монтируем папку static для CSS, JS и других файлов
+if Path("static").exists():
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+    print("✅ Статические файлы смонтированы из папки 'static/'")
+else:
+    print("⚠️  Папка 'static/' не найдена")
+
+# ==================== RUN ====================
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
