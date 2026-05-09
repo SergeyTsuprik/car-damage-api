@@ -12,11 +12,14 @@ import os
 # ==================== 1. SENTRY ====================
 import sentry_sdk
 
-sentry_sdk.init(
-    "https://YOUR_SENTRY_DSN@sentry.io/PROJECT_ID",  # ← замени на свой DSN
-    traces_sample_rate=1.0,
-    environment="production"
-)
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        SENTRY_DSN,
+        traces_sample_rate=1.0,
+        environment="production"
+    )
 
 # ==================== 2. RATE LIMITING ====================
 from slowapi import Limiter
