@@ -65,7 +65,9 @@
             </form>  
             <div id="result" class="mt-8 hidden bg-white p-4 rounded-lg">  
                 <h3 class="font-bold mb-4">Результат анализа:</h3>  
-                <img id="previewImage" style="max-width: 100%; max-height: 400px; margin-bottom: 1rem; border-radius: 8px;">  
+                <div style="display: flex; justify-content: center;">
+                    <canvas id="outputCanvas" style="max-width: 100%; max-height: 500px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 1rem;"></canvas>
+                </div>
                 <div id="resultContent"></div>  
             </div>  
         </div>  
@@ -358,6 +360,58 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
     const API_URL = "/api/detect";
     const API_KEY = "test-free-key";
 
+    // Русские названия класса с цветами
+    const damageLabels = {
+        'mirror_right': { ru: 'Зеркало справа', color: '#EF4444' },
+        'mirror_left': { ru: 'Зеркало слева', color: '#F97316' },
+        'bumper_front': { ru: 'Бампер спереди', color: '#EAB308' },
+        'bumper_rear': { ru: 'Бампер сзади', color: '#BFDBFE' },
+        'headlight_left': { ru: 'Фара слева', color: '#34D399' },
+        'headlight_right': { ru: 'Фара справа', color: '#60A5FA' },
+        'tail_light_left': { ru: 'Стоп-сигнал слева', color: '#A78BFA' },
+        'tail_light_right': { ru: 'Стоп-сигнал справа', color: '#F472B6' },
+        'dent': { ru: 'Вмятина', color: '#FB923C' },
+        'scratch': { ru: 'Царапина', color: '#FCD34D' },
+        'crack': { ru: 'Трещина', color: '#DC2626' }
+    };
+
+    function drawBoundingBoxes(image, detections) {
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Устанавливаем размеры canvas в соответствии с изображением
+        canvas.width = image.width;
+        canvas.height = image.height;
+
+        // Рисуем изображение
+        ctx.drawImage(image, 0, 0);
+
+        // Рисуем bounding boxes
+        detections.forEach(detection => {
+            const bbox = detection.bbox;
+            const labelInfo = damageLabels[detection.class] || { ru: detection.class, color: '#06B6D4' };
+            
+            // Рисуем прямоугольник
+            ctx.strokeStyle = labelInfo.color;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
+
+            // Рисуем фон для текста
+            const fontSize = 16;
+            ctx.font = `bold ${fontSize}px Arial`;
+            const textWidth = ctx.measureText(labelInfo.ru).width;
+            const padding = 5;
+
+            ctx.fillStyle = labelInfo.color;
+            ctx.fillRect(bbox.x, bbox.y - fontSize - 2 * padding, textWidth + 2 * padding, fontSize + 2 * padding);
+
+            // Рисуем текст
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.fillText(labelInfo.ru, bbox.x + padding, bbox.y - padding);
+        });
+    }
+
     document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const file = document.getElementById('imageInput').files[0];
@@ -365,67 +419,76 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
 
         const resultDiv = document.getElementById('result');
         const resultContent = document.getElementById('resultContent');
-        const previewImage = document.getElementById('previewImage');
-
-        // Показываем preview загруженного изображения
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            previewImage.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
 
         resultDiv.classList.remove('hidden');
         resultContent.innerHTML = '<p class="text-gray-500">⏳ Анализирую изображение...</p>';
 
         try {
-            const formData = new FormData();
-            formData.append('file', file);
+            // Загружаем изображение для рисования
+            const image = new Image();
+            image.onload = async () => {
+                // Отправляем запрос к API
+                const formData = new FormData();
+                formData.append('file', file);
 
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'X-API-Key': API_KEY
-                },
-                body: formData
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || `API Error: ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            if (data.count === 0) {
-                resultContent.innerHTML = `
-                    <div class="bg-blue-50 border border-blue-200 rounded p-4">
-                        <p class="text-blue-800">✅ Анализ завершён</p>
-                        <p class="text-gray-700 mt-2">Повреждения не обнаружены</p>
-                        <p class="text-sm text-gray-600 mt-2">Запросов осталось: ${data.requests_remaining}</p>
-                    </div>
-                `;
-            } else {
-                let html = `
-                    <div class="bg-green-50 border border-green-200 rounded p-4 mb-4">
-                        <p class="text-green-800 font-bold">✅ Найдено ${data.count} проблем</p>
-                        <p class="text-sm text-gray-600 mt-2">Запросов осталось: ${data.requests_remaining}</p>
-                    </div>
-                    <div class="space-y-3">
-                `;
-
-                data.detections.forEach((detection, index) => {
-                    html += `
-                        <div class="border-l-4 border-orange-500 pl-4 py-2 bg-orange-50 rounded">
-                            <p class="font-bold text-orange-900">${index + 1}. ${detection.class}</p>
-                            <p class="text-sm text-gray-700">Уверенность: ${(detection.confidence * 100).toFixed(1)}%</p>
-                            <p class="text-sm text-gray-600">Размер: ${detection.bbox.width}x${detection.bbox.height}px</p>
-                        </div>
-                    `;
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'X-API-Key': API_KEY
+                    },
+                    body: formData
                 });
 
-                html += '</div>';
-                resultContent.innerHTML = html;
-            }
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || `API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.count === 0) {
+                    // Рисуем изображение без повреждений
+                    const canvas = document.getElementById('outputCanvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    ctx.drawImage(image, 0, 0);
+
+                    resultContent.innerHTML = `
+                        <div class="bg-blue-50 border border-blue-200 rounded p-4">
+                            <p class="text-blue-800">✅ Анализ завершён</p>
+                            <p class="text-gray-700 mt-2">Повреждения не обнаружены</p>
+                            <p class="text-sm text-gray-600 mt-2">Запросов осталось: ${data.requests_remaining}</p>
+                        </div>
+                    `;
+                } else {
+                    // Рисуем bounding boxes
+                    drawBoundingBoxes(image, data.detections);
+
+                    // Показываем легенду
+                    let html = `
+                        <div class="bg-green-50 border border-green-200 rounded p-4 mb-4">
+                            <p class="text-green-800 font-bold">✅ Найдено ${data.count} проблем</p>
+                            <p class="text-sm text-gray-600 mt-2">Запросов осталось: ${data.requests_remaining}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                    `;
+
+                    data.detections.forEach((detection, index) => {
+                        const labelInfo = damageLabels[detection.class] || { ru: detection.class, color: '#06B6D4' };
+                        html += `
+                            <div class="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                <div style="width: 16px; height: 16px; background-color: ${labelInfo.color}; border-radius: 2px;"></div>
+                                <span class="text-sm font-medium text-gray-700">${labelInfo.ru}</span>
+                            </div>
+                        `;
+                    });
+
+                    html += '</div>';
+                    resultContent.innerHTML = html;
+                }
+            };
+            image.src = URL.createObjectURL(file);
         } catch (error) {
             resultContent.innerHTML = `
                 <div class="bg-red-50 border border-red-200 rounded p-4">
@@ -437,7 +500,7 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
         }
     });
 
-    // Добавляем preview при выборе файла
+    // Добавляем название файла при выборе
     document.getElementById('imageInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -445,6 +508,9 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
             label.textContent = `📸 ${file.name}`;
         }
     });
+
+    // Переводим названия классов с русскими названиями
+    window.damageLabels = damageLabels;
 </script>
 
 </body>  
