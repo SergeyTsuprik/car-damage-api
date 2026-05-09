@@ -1,6 +1,7 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Header
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
 import cv2
 import numpy as np
@@ -8,13 +9,50 @@ from pathlib import Path
 import json
 import os
 
+# ==================== 1. SENTRY ====================
+import sentry_sdk
+
+sentry_sdk.init(
+    "https://YOUR_SENTRY_DSN@sentry.io/PROJECT_ID",  # ← замени на свой DSN
+    traces_sample_rate=1.0,
+    environment="production"
+)
+
+# ==================== 2. RATE LIMITING ====================
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+limiter = Limiter(key_func=get_remote_address)
+
+# ==================== 3. FASTAPI APP ====================
 app = FastAPI(
     title="Car Damage Detection API",
     version="1.0.0",
     description="Detect car parts and damage from images"
 )
 
-# Загружаем модель
+# Привязываем limiter к app
+app.state.limiter = limiter
+
+# ==================== 4. CORS ====================
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Или конкретные домены: ["https://yourdomain.by", "https://app.yourdomain.by"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ==================== 5. EXCEPTION HANDLER для Rate Limiting ====================
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Too many requests. Please try again later."}
+    )
+
+# ==================== 6. ЗАГРУЗКА МОДЕЛИ ====================
 print("📦 Загружаю модель...")
 MODEL_PATH = "runs/detect/car_damage/v2_merged/weights/best.pt"
 
@@ -25,7 +63,7 @@ else:
     model = YOLO(MODEL_PATH)
     print("✅ Модель загружена!")
 
-# Простая система API ключей (потом интегрируем с БД)
+# ==================== 7. API КЛЮЧИ ====================
 VALID_KEYS = {
     "test-free-key": {"plan": "free", "limit": 10, "used": 0},
     "test-starter": {"plan": "starter", "limit": 1000, "used": 0},
@@ -43,17 +81,21 @@ def verify_api_key(api_key: str = Header(..., alias="X-API-Key")):
 # ==================== ENDPOINTS ====================
 
 @app.get("/")
-async def root():
+@limiter.limit("1000/minute")
+async def root(request: Request):
     """Главная страница"""
     return FileResponse("index.html", media_type="text/html")
 
 @app.get("/health")
-async def health():
+@limiter.limit("1000/minute")
+async def health(request: Request):
     """Health check"""
     return {"status": "ok", "model_loaded": model is not None}
 
 @app.post("/api/detect")
+@limiter.limit("100/minute")  # ← макс 100 запросов в минуту
 async def detect_damage(
+    request: Request,
     file: UploadFile = File(...),
     api_key: str = Header(..., alias="X-API-Key"),
     confidence: float = 0.13
@@ -104,10 +146,6 @@ async def detect_damage(
                 class_name = r.names[class_id]
                 conf_score = float(box.conf[0])
                 
-                # Пропускаем "undamaged" части (опционально)
-                # if class_name == "undamaged":
-                #     continue
-                
                 x1, y1, x2, y2 = box.xyxy[0].tolist()
                 
                 detection = {
@@ -144,7 +182,9 @@ async def detect_damage(
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 @app.post("/api/detect-and-save")
+@limiter.limit("50/minute")
 async def detect_and_save(
+    request: Request,
     file: UploadFile = File(...),
     api_key: str = Header(..., alias="X-API-Key")
 ):
@@ -180,7 +220,8 @@ async def detect_and_save(
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/models/info")
-async def model_info():
+@limiter.limit("1000/minute")
+async def model_info(request: Request):
     """Информация о модели"""
     if not model:
         return {"loaded": False}
