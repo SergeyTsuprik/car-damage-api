@@ -260,6 +260,63 @@
     </div>  
 </section>  
 
+<!-- DOCUMENTATION SECTION -->
+<section id="docs" class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center">Примеры использования</h2>
+        
+        <!-- Python Tab -->
+        <div class="mb-8 bg-gray-50 p-6 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">🐍 Python</h3>
+            <pre class="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto text-sm"><code>import requests
+
+API_URL = "https://car-damage-api.railway.app/api/detect"
+API_KEY = "test-free-key"
+
+with open("car.jpg", "rb") as f:
+    files = {"file": f}
+    headers = {"X-API-Key": API_KEY}
+    response = requests.post(API_URL, files=files, headers=headers)
+
+data = response.json()
+print(f"Найдено повреждений: {data['count']}")</code></pre>
+        </div>
+
+        <!-- JavaScript Tab -->
+        <div class="mb-8 bg-gray-50 p-6 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">💻 JavaScript</h3>
+            <pre class="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto text-sm"><code>const form = new FormData();
+form.append("file", fileInput.files[0]);
+
+fetch("https://car-damage-api.railway.app/api/detect", {
+  method: "POST",
+  headers: {"X-API-Key": "test-free-key"},
+  body: form
+})
+.then(r => r.json())
+.then(data => console.log(data));</code></pre>
+        </div>
+
+        <!-- cURL Tab -->
+        <div class="mb-8 bg-gray-50 p-6 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">🔧 cURL</h3>
+            <pre class="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto text-sm"><code>curl -X POST "https://car-damage-api.railway.app/api/detect" \
+  -H "X-API-Key: test-free-key" \
+  -F "file=@car.jpg"</code></pre>
+        </div>
+
+        <div class="text-center mt-8">
+            <p class="text-gray-600 mb-4">📚 Полная документация API:</p>
+            <a href="https://car-damage-api.railway.app/docs" 
+               target="_blank"
+               class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 inline-block">
+                Swagger UI →
+            </a>
+        </div>
+    </div>
+</section>
+
+
 <!-- FOOTER + CTA -->  
 <section class="bg-blue-600 text-white py-16">  
     <div class="max-w-6xl mx-auto px-4 text-center">  
