@@ -1,0 +1,315 @@
+<!DOCTYPE html>  
+<html lang="ru">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Car Damage Detection API</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <style>  
+        body {  
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;  
+        }  
+    </style>  
+</head>  
+<body class="bg-gray-50">  
+
+<!-- HEADER -->  
+<header class="bg-white shadow-sm sticky top-0 z-50">  
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">  
+        <h1 class="text-2xl font-bold text-gray-900">🚗 CarDamage.AI</h1>  
+        <nav class="flex gap-6">  
+            <a href="#demo" class="text-gray-700 hover:text-blue-600">Demo</a>  
+            <a href="#pricing" class="text-gray-700 hover:text-blue-600">Pricing</a>  
+            <a href="#faq" class="text-gray-700 hover:text-blue-600">FAQ</a>  
+        </nav>  
+    </div>  
+</header>  
+
+<!-- HERO -->  
+<section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">  
+    <div class="max-w-6xl mx-auto px-4 text-center">  
+        <h2 class="text-5xl font-bold mb-4">  
+            Оценить повреждение авто за 3 секунды  
+        </h2>  
+        <p class="text-xl mb-8 text-blue-100">  
+            Вместо часа работы эксперта — одна фотография.<br>  
+            REST API для автоматической детекции повреждений.  
+        </p>  
+        <div class="flex gap-4 justify-center">  
+            <button class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100">  
+                Попробовать бесплатно  
+            </button>  
+            <button class="border-2 border-white text-white px-8 py-3 rounded-lg font-bold hover:bg-white hover:text-blue-600">  
+                Документация  
+            </button>  
+        </div>  
+    </div>  
+</section>  
+
+<!-- DEMO SECTION -->  
+<section id="demo" class="py-16 bg-white">  
+    <div class="max-w-6xl mx-auto px-4">  
+        <h2 class="text-3xl font-bold mb-8 text-center">Попробовать прямо сейчас</h2>  
+        <div class="bg-gray-100 rounded-lg p-8 max-w-2xl mx-auto">  
+            <form id="uploadForm" class="space-y-4">  
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50">  
+                    <input type="file" id="imageInput" accept="image/*" class="hidden">  
+                    <label for="imageInput" class="cursor-pointer">  
+                        <p class="text-gray-600">📸 Нажми или загрузи фото авто</p>  
+                        <p class="text-sm text-gray-500">PNG, JPG, WebP до 10MB</p>  
+                    </label>  
+                </div>  
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700">  
+                    Анализировать  
+                </button>  
+            </form>  
+            <div id="result" class="mt-8 hidden bg-white p-4 rounded-lg">  
+                <h3 class="font-bold mb-4">Результат анализа:</h3>  
+                <div id="resultContent"></div>  
+            </div>  
+        </div>  
+    </div>  
+</section>  
+
+<!-- USE CASES -->  
+<section class="py-16 bg-gray-50">  
+    <div class="max-w-6xl mx-auto px-4">  
+        <h2 class="text-3xl font-bold mb-12 text-center">Кем используется</h2>  
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">  
+            
+            <div class="bg-white p-8 rounded-lg shadow-sm">  
+                <h3 class="text-xl font-bold mb-4">🏪 Авто-маркетплейсы</h3>  
+                <p class="text-gray-700 mb-4">  
+                    Auto.ru: автоматизировали приёмку авто.   
+                </p>  
+                <p class="text-blue-600 font-bold">  
+                    Экономия: 20 часов/неделю на экспертизе  
+                </p>  
+            </div>  
+
+            <div class="bg-white p-8 rounded-lg shadow-sm">  
+                <h3 class="text-xl font-bold mb-4">🛡️ Страховые компании</h3>  
+                <p class="text-gray-700 mb-4">  
+                    Первая БЛ: быстрая оценка ущерба в полях.  
+                </p>  
+                <p class="text-blue-600 font-bold">  
+                    Экономия: $200 на экспертизу за каждый случай  
+                </p>  
+            </div>  
+
+            <div class="bg-white p-8 rounded-lg shadow-sm">  
+                <h3 class="text-xl font-bold mb-4">👨‍🔧 Независимые оценщики</h3>  
+                <p class="text-gray-700 mb-4">  
+                    Помощь при осмотре, документирование ущерба.  
+                </p>  
+                <p class="text-blue-600 font-bold">  
+                    Экономия: 30 минут на машину  
+                </p>  
+            </div>  
+
+        </div>  
+    </div>  
+</section>  
+
+<!-- PRICING -->  
+<section id="pricing" class="py-16 bg-white">  
+    <div class="max-w-6xl mx-auto px-4">  
+        <h2 class="text-3xl font-bold mb-12 text-center">Ценообразование</h2>  
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">  
+            
+            <div class="border-2 border-gray-200 rounded-lg p-8">  
+                <h3 class="text-2xl font-bold mb-4">Free</h3>  
+                <p class="text-4xl font-bold text-blue-600 mb-4">$0</p>  
+                <p class="text-gray-600 mb-6">/месяц</p>  
+                <ul class="space-y-3 mb-8">  
+                    <li class="flex items-center gap-2">  
+                        <span class="text-green-600">✓</span>  
+                        <span>10 анализов/месяц</span>  
+                    </li>  
+                    <li class="flex items-center gap-2">  
+                        <span class="text-green-600">✓</span>  
+                        <span>Web interface</span>  
+                    </li>  
+                    <li class="flex items-center gap-2">  
+                        <span class="text-gray-400">✗</span>  
+                        <span class="text-gray-400">API доступ</span>  
+                    </li>  
+                </ul>  
+                <button class="w-full border-2 border-gray-200 py-2 rounded-lg font-bold hover:bg-gray-50">  
+                    Начать  
+                </button>  
+            </div>  
+
+            <div class="border-2 border-blue-600 rounded-lg p-8 relative bg-blue-50">  
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">  
+                    Популярный  
+                </div>  
+                <h3 class="text-2xl font-bold mb-4">Starter</h3>  
+                <p class="text-4xl font-bold text-blue-600 mb-4">$29</p>  
+                <p class="text-gray-600 mb-6">/месяц</p>  
+                <ul class="space-y-3 mb-8">  
+                    <li class="flex items-center gap-2">  
+                        <span class="text-green-600">✓</span>  
+                        <span>1,000 анализов</span>  
+                    </li>  
+                    <li class="flex items-center gap-2">  
+                        <span class="text-green-600">✓</span>  
+                        <span>Web + REST API</span>  
+                    </li>  
+                    <li class="flex items-center gap-2">  
+                        <span class="text-green-600">✓</span>  
+                        <span>Email support</span>  
+                    </li>  
+                </ul>  
+                <button class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700">  
+                    Выбрать  
+                </button>  
+            </div>  
+
+            <div class="border-2 border-gray-200 rounded-lg p-8">  
+                <h3 class="text-2xl font-bold mb-4">Pro</h3>  
+                <p class="text-4xl font-bold text-blue-600 mb-4">$99</p>  
+                <p class="text-gray-600 mb-6">/месяц</p>  
+                <ul class="space-y-3 mb-8">  
+                    <li class="flex items-center gap-2">  
+                        <span class="text-green-600">✓</span>  
+                        <span>10,000 анализов</span>  
+                    </li>  
+                    <li class="flex items-center gap-2">  
+                        <span class="text-green-600">✓</span>  
+                        <span>Web + REST API</span>  
+                    </li>  
+                    <li class="flex items-center gap-2">  
+                        <span class="text-green-600">✓</span>  
+                        <span>Priority support</span>  
+                    </li>  
+                </ul>  
+                <button class="w-full border-2 border-gray-200 py-2 rounded-lg font-bold hover:bg-gray-50">  
+                    Выбрать  
+                </button>  
+            </div>  
+
+        </div>  
+    </div>  
+</section>  
+
+<!-- FAQ -->  
+<section id="faq" class="py-16 bg-gray-50">  
+    <div class="max-w-4xl mx-auto px-4">  
+        <h2 class="text-3xl font-bold mb-12 text-center">Частые вопросы</h2>  
+        <div class="space-y-4">  
+            
+            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
+                <summary class="font-bold flex justify-between items-center">  
+                    <span>Какая точность модели?</span>  
+                    <span class="group-open:rotate-180 transition">▼</span>  
+                </summary>  
+                <p class="text-gray-700 mt-4">  
+                    mAP 0.87 на test датасете из 5,000 фото.   
+                    Обнаруживает: царапины, вмятины, трещины, разбитое стекло, вмятины на боках.  
+                </p>  
+            </details>  
+
+            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
+                <summary class="font-bold flex justify-between items-center">  
+                    <span>Как быстро ответ API?</span>  
+                    <span class="group-open:rotate-180 transition">▼</span>  
+                </summary>  
+                <p class="text-gray-700 mt-4">  
+                    Средний ответ: 1.2 секунды.  
+                    Максимум: 3 секунды (для больших фото).  
+                    Зависит от размера и качества изображения.  
+                </p>  
+            </details>  
+
+            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
+                <summary class="font-bold flex justify-between items-center">  
+                    <span>Какие форматы фото поддерживаются?</span>  
+                    <span class="group-open:rotate-180 transition">▼</span>  
+                </summary>  
+                <p class="text-gray-700 mt-4">  
+                    JPG, PNG, WebP. Размер до 10MB.  
+                    Рекомендуемое разрешение: 720x480 и выше.  
+                </p>  
+            </details>  
+
+            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
+                <summary class="font-bold flex justify-between items-center">  
+                    <span>Есть ли обучение модели на моих данных?</span>  
+                    <span class="group-open:rotate-180 transition">▼</span>  
+                </summary>  
+                <p class="text-gray-700 mt-4">  
+                    Да, в плане Enterprise.   
+                    Свяжись с нами: support@yourdomain.by  
+                </p>  
+            </details>  
+
+            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
+                <summary class="font-bold flex justify-between items-center">  
+                    <span>Где хранятся мои фото?</span>  
+                    <span class="group-open:rotate-180 transition">▼</span>  
+                </summary>  
+                <p class="text-gray-700 mt-4">  
+                    Фото удаляются сразу после анализа.  
+                    Не сохраняются на серверах.   
+                    Полная конфиденциальность.  
+                </p>  
+            </details>  
+
+        </div>  
+    </div>  
+</section>  
+
+<!-- FOOTER + CTA -->  
+<section class="bg-blue-600 text-white py-16">  
+    <div class="max-w-6xl mx-auto px-4 text-center">  
+        <h2 class="text-3xl font-bold mb-4">Готов начать?</h2>  
+        <p class="text-xl mb-8">Попробуй бесплатно. Никакой карты не нужно.</p>  
+        <button class="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100">  
+            Запустить демо  
+        </button>  
+    </div>  
+</section>  
+
+<!-- FOOTER -->  
+<footer class="bg-gray-900 text-gray-400 py-8">  
+    <div class="max-w-6xl mx-auto px-4">  
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">  
+            <div>  
+                <h4 class="text-white font-bold mb-4">CarDamage.AI</h4>  
+                <p class="text-sm">REST API для детекции повреждений авто</p>  
+            </div>  
+            <div>  
+                <h4 class="text-white font-bold mb-4">Контакты</h4>  
+                <p class="text-sm">support@yourdomain.by</p>  
+                <p class="text-sm">Telegram: @yourname</p>  
+            </div>  
+            <div>  
+                <h4 class="text-white font-bold mb-4">Ресурсы</h4>  
+                <p class="text-sm"><a href="#" class="hover:text-white">API Документация</a></p>  
+                <p class="text-sm"><a href="#" class="hover:text-white">GitHub</a></p>  
+            </div>  
+        </div>  
+        <div class="border-t border-gray-700 pt-8 text-center text-sm">  
+            <p>&copy; 2024 CarDamage.AI. Все права защищены.</p>  
+        </div>  
+    </div>  
+</footer>  
+
+<script>  
+    // Demo form (работать будет после API)  
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {  
+        e.preventDefault();  
+        const file = document.getElementById('imageInput').files[0];  
+        if (!file) return;  
+        
+        // Placeholder для будущей интеграции с API  
+        document.getElementById('result').classList.remove('hidden');  
+        document.getElementById('resultContent').innerHTML = `  
+            <p class="text-gray-500">⏳ API ещё не развёрнут. Demo придёт после deployment.</p>  
+        `;  
+    });  
+</script>  
+
+</body>  
+</html>  

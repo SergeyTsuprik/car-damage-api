@@ -1,0 +1,54 @@
+# Виртуальная среда
+.venv/
+venv/
+env/
+
+# Python кеш
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Крупные файлы моделей (не коммитим веса)
+*.pt
+*.pth
+*.onnx
+*.h5
+*.json
+
+# Датасеты (не коммитим огромные папки с данными)
+Datasets/
+Test_Image/
+unified_dataset_semantic.yolov8/
+
+
+# Результаты обучения
+runs/
+logs/
+outputs/
+
+# Служебные файлы
+.env
+.DS_Store
+*.swp
+*.swo
+*~
+merge_datasets.py
+test_model.py
+train.py
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Архивы
+Архив/
+*.zip
+*.tar
+*.tar.gz
+
+# Временные файлы
+*.tmp
+.cache/
