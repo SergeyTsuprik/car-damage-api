@@ -16,7 +16,7 @@ app = FastAPI(
 
 # Загружаем модель
 print("📦 Загружаю модель...")
-MODEL_PATH = r"d:\car-damage-api\runs\detect\car_damage\v2_merged\weights\best.pt"
+MODEL_PATH = "runs/detect/car_damage/v2_merged/weights/best.pt"
 
 if not Path(MODEL_PATH).exists():
     print(f"❌ Модель не найдена: {MODEL_PATH}")
