@@ -1,277 +1,569 @@
-<!DOCTYPE html>  
-<html lang="ru">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Car Damage Detection API</title>  
-    <script src="https://cdn.tailwindcss.com"></script>  
-    <style>  
-        body {  
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;  
-        }  
-    </style>  
-</head>  
-<body class="bg-gray-50">  
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarDamage.AI - Детекция повреждений автомобилей</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<!-- HEADER -->  
-<header class="bg-white shadow-sm sticky top-0 z-50">  
-    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">  
-        <h1 class="text-2xl font-bold text-gray-900">🚗 CarDamage.AI</h1>  
-        <nav class="flex gap-6">  
-            <a href="#demo" class="text-gray-700 hover:text-blue-600">Demo</a>  
-            <a href="#pricing" class="text-gray-700 hover:text-blue-600">Pricing</a>  
-            <a href="#faq" class="text-gray-700 hover:text-blue-600">FAQ</a>  
-        </nav>  
-    </div>  
-</header>  
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
 
-<!-- HERO -->  
-<section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">  
-    <div class="max-w-6xl mx-auto px-4 text-center">  
-        <h2 class="text-5xl font-bold mb-4">  
-            Оценить повреждение авто за 3 секунды  
-        </h2>  
-        <p class="text-xl mb-8 text-blue-100">  
-            Вместо часа работы эксперта — одна фотография.<br>  
-            REST API для автоматической детекции повреждений.  
-        </p>  
-        <div class="flex gap-4 justify-center">  
-            <button class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100">  
-                Попробовать бесплатно  
-            </button>  
-            <button class="border-2 border-white text-white px-8 py-3 rounded-lg font-bold hover:bg-white hover:text-blue-600">  
-                Документация  
-            </button>  
-        </div>  
-    </div>  
-</section>  
+        header {
+            background: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
 
-<!-- DEMO SECTION -->  
-<section id="demo" class="py-16 bg-white">  
-    <div class="max-w-6xl mx-auto px-4">  
-        <h2 class="text-3xl font-bold mb-8 text-center">Попробовать прямо сейчас</h2>  
-        <div class="bg-gray-100 rounded-lg p-8 max-w-2xl mx-auto">  
-            <form id="uploadForm" class="space-y-4">  
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50">  
-                    <input type="file" id="imageInput" accept="image/*" class="hidden">  
-                    <label for="imageInput" class="cursor-pointer">  
-                        <p class="text-gray-600">📸 Нажми или загрузи фото авто</p>  
-                        <p class="text-sm text-gray-500">PNG, JPG, WebP до 10MB</p>  
-                    </label>  
-                </div>  
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700">  
-                    Анализировать  
-                </button>  
-            </form>  
-            <div id="result" class="mt-8 hidden bg-white p-4 rounded-lg">  
-                <h3 class="font-bold mb-4">Результат анализа:</h3>  
-                <div style="display: flex; justify-content: center;">
-                    <canvas id="outputCanvas" style="max-width: 100%; max-height: 500px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 1rem;"></canvas>
-                </div>
-                <div id="resultContent"></div>  
-            </div>  
-        </div>  
-    </div>  
-</section>  
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
 
-<!-- USE CASES -->  
-<section class="py-16 bg-gray-50">  
-    <div class="max-w-6xl mx-auto px-4">  
-        <h2 class="text-3xl font-bold mb-12 text-center">Кем используется</h2>  
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">  
-            
-            <div class="bg-white p-8 rounded-lg shadow-sm">  
-                <h3 class="text-xl font-bold mb-4">🏪 Авто-маркетплейсы</h3>  
-                <p class="text-gray-700 mb-4">  
-                    Auto.ru: автоматизировали приёмку авто.   
-                </p>  
-                <p class="text-blue-600 font-bold">  
-                    Экономия: 20 часов/неделю на экспертизе  
-                </p>  
-            </div>  
+        nav a {
+            margin: 0 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
 
-            <div class="bg-white p-8 rounded-lg shadow-sm">  
-                <h3 class="text-xl font-bold mb-4">🛡️ Страховые компании</h3>  
-                <p class="text-gray-700 mb-4">  
-                    Первая БЛ: быстрая оценка ущерба в полях.  
-                </p>  
-                <p class="text-blue-600 font-bold">  
-                    Экономия: $200 на экспертизу за каждый случай  
-                </p>  
-            </div>  
+        nav a:hover {
+            color: #667eea;
+        }
 
-            <div class="bg-white p-8 rounded-lg shadow-sm">  
-                <h3 class="text-xl font-bold mb-4">👨‍🔧 Независимые оценщики</h3>  
-                <p class="text-gray-700 mb-4">  
-                    Помощь при осмотре, документирование ущерба.  
-                </p>  
-                <p class="text-blue-600 font-bold">  
-                    Экономия: 30 минут на машину  
-                </p>  
-            </div>  
+        .hero {
+            padding: 60px 40px;
+            text-align: center;
+            color: white;
+        }
 
-        </div>  
-    </div>  
-</section>  
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
 
-<!-- PRICING -->  
-<section id="pricing" class="py-16 bg-white">  
-    <div class="max-w-6xl mx-auto px-4">  
-        <h2 class="text-3xl font-bold mb-12 text-center">Ценообразование</h2>  
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">  
-            
-            <div class="border-2 border-gray-200 rounded-lg p-8">  
-                <h3 class="text-2xl font-bold mb-4">Free</h3>  
-                <p class="text-4xl font-bold text-blue-600 mb-4">$0</p>  
-                <p class="text-gray-600 mb-6">/месяц</p>  
-                <ul class="space-y-3 mb-8">  
-                    <li class="flex items-center gap-2">  
-                        <span class="text-green-600">✓</span>  
-                        <span>10 анализов/месяц</span>  
-                    </li>  
-                    <li class="flex items-center gap-2">  
-                        <span class="text-green-600">✓</span>  
-                        <span>Web interface</span>  
-                    </li>  
-                    <li class="flex items-center gap-2">  
-                        <span class="text-gray-400">✗</span>  
-                        <span class="text-gray-400">API доступ</span>  
-                    </li>  
-                </ul>  
-                <button class="w-full border-2 border-gray-200 py-2 rounded-lg font-bold hover:bg-gray-50">  
-                    Начать  
-                </button>  
-            </div>  
+        .hero p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
 
-            <div class="border-2 border-blue-600 rounded-lg p-8 relative bg-blue-50">  
-                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">  
-                    Популярный  
-                </div>  
-                <h3 class="text-2xl font-bold mb-4">Starter</h3>  
-                <p class="text-4xl font-bold text-blue-600 mb-4">$29</p>  
-                <p class="text-gray-600 mb-6">/месяц</p>  
-                <ul class="space-y-3 mb-8">  
-                    <li class="flex items-center gap-2">  
-                        <span class="text-green-600">✓</span>  
-                        <span>1,000 анализов</span>  
-                    </li>  
-                    <li class="flex items-center gap-2">  
-                        <span class="text-green-600">✓</span>  
-                        <span>Web + REST API</span>  
-                    </li>  
-                    <li class="flex items-center gap-2">  
-                        <span class="text-green-600">✓</span>  
-                        <span>Email support</span>  
-                    </li>  
-                </ul>  
-                <button class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700">  
-                    Выбрать  
-                </button>  
-            </div>  
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
 
-            <div class="border-2 border-gray-200 rounded-lg p-8">  
-                <h3 class="text-2xl font-bold mb-4">Pro</h3>  
-                <p class="text-4xl font-bold text-blue-600 mb-4">$99</p>  
-                <p class="text-gray-600 mb-6">/месяц</p>  
-                <ul class="space-y-3 mb-8">  
-                    <li class="flex items-center gap-2">  
-                        <span class="text-green-600">✓</span>  
-                        <span>10,000 анализов</span>  
-                    </li>  
-                    <li class="flex items-center gap-2">  
-                        <span class="text-green-600">✓</span>  
-                        <span>Web + REST API</span>  
-                    </li>  
-                    <li class="flex items-center gap-2">  
-                        <span class="text-green-600">✓</span>  
-                        <span>Priority support</span>  
-                    </li>  
-                </ul>  
-                <button class="w-full border-2 border-gray-200 py-2 rounded-lg font-bold hover:bg-gray-50">  
-                    Выбрать  
-                </button>  
-            </div>  
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
 
-        </div>  
-    </div>  
-</section>  
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
 
-<!-- FAQ -->  
-<section id="faq" class="py-16 bg-gray-50">  
-    <div class="max-w-4xl mx-auto px-4">  
-        <h2 class="text-3xl font-bold mb-12 text-center">Частые вопросы</h2>  
-        <div class="space-y-4">  
-            
-            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
-                <summary class="font-bold flex justify-between items-center">  
-                    <span>Какая точность модели?</span>  
-                    <span class="group-open:rotate-180 transition">▼</span>  
-                </summary>  
-                <p class="text-gray-700 mt-4">  
-                    mAP 0.87 на test датасете из 5,000 фото.   
-                    Обнаруживает: царапины, вмятины, трещины, разбитое стекло, вмятины на боках.  
-                </p>  
-            </details>  
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
 
-            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
-                <summary class="font-bold flex justify-between items-center">  
-                    <span>Как быстро ответ API?</span>  
-                    <span class="group-open:rotate-180 transition">▼</span>  
-                </summary>  
-                <p class="text-gray-700 mt-4">  
-                    Средний ответ: 1.2 секунды.  
-                    Максимум: 3 секунды (для больших фото).  
-                    Зависит от размера и качества изображения.  
-                </p>  
-            </details>  
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
 
-            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
-                <summary class="font-bold flex justify-between items-center">  
-                    <span>Какие форматы фото поддерживаются?</span>  
-                    <span class="group-open:rotate-180 transition">▼</span>  
-                </summary>  
-                <p class="text-gray-700 mt-4">  
-                    JPG, PNG, WebP. Размер до 10MB.  
-                    Рекомендуемое разрешение: 720x480 и выше.  
-                </p>  
-            </details>  
+        .btn-secondary:hover {
+            background: white;
+            color: #667eea;
+        }
 
-            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
-                <summary class="font-bold flex justify-between items-center">  
-                    <span>Есть ли обучение модели на моих данных?</span>  
-                    <span class="group-open:rotate-180 transition">▼</span>  
-                </summary>  
-                <p class="text-gray-700 mt-4">  
-                    Да, в плане Enterprise.   
-                    Свяжись с нами: support@yourdomain.by  
-                </p>  
-            </details>  
+        .demo-section {
+            background: white;
+            padding: 40px;
+            margin: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
 
-            <details class="bg-white p-6 rounded-lg cursor-pointer group">  
-                <summary class="font-bold flex justify-between items-center">  
-                    <span>Где хранятся мои фото?</span>  
-                    <span class="group-open:rotate-180 transition">▼</span>  
-                </summary>  
-                <p class="text-gray-700 mt-4">  
-                    Фото удаляются сразу после анализа.  
-                    Не сохраняются на серверах.   
-                    Полная конфиденциальность.  
-                </p>  
-            </details>  
+        .demo-section h2 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 28px;
+            color: #333;
+        }
 
-        </div>  
-    </div>  
-</section>  
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
 
-<!-- DOCUMENTATION SECTION -->
-<section id="docs" class="py-16 bg-white">
-    <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-12 text-center">Примеры использования</h2>
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: #999;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+        }
+
+        #imagePreview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #analysisCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: none;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .analyze-btn {
+            display: block;
+            margin: 0 auto 20px;
+            padding: 12px 40px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .analyze-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .analyze-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .legend {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .legend.active {
+            display: block;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 10px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .legend-text {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .section {
+            padding: 60px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            font-size: 32px;
+            margin-bottom: 40px;
+            color: white;
+            text-align: center;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .card p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .pricing {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .price-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+        }
+
+        .price-card.popular {
+            border: 3px solid #667eea;
+            transform: scale(1.05);
+        }
+
+        .price-card h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .price {
+            font-size: 36px;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .period {
+            color: #999;
+            margin-bottom: 25px;
+        }
+
+        .features {
+            text-align: left;
+            margin: 25px 0;
+        }
+
+        .feature {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .feature:last-child {
+            border: none;
+        }
+
+        .faq {
+            margin-top: 40px;
+        }
+
+        .faq-item {
+            background: white;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 20px;
+            cursor: pointer;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .faq-question:hover {
+            background: #f0f0f0;
+        }
+
+        .faq-answer {
+            padding: 20px;
+            display: none;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .faq-answer.active {
+            display: block;
+        }
+
+        .code-example {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .code-example pre {
+            color: #333;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .color-scratches { background: #FF6B6B; }
+        .color-dents { background: #4ECDC4; }
+        .color-cracks { background: #FFE66D; }
+        .color-glass { background: #95E1D3; }
+        .color-mirror { background: #C7CEEA; }
+        .color-bumper { background: #FF8B94; }
+        .color-headlight { background: #A8D8EA; }
+        .color-other { background: #AA96DA; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">🚗 CarDamage.AI</div>
+        <nav>
+            <a href="#demo">Demo</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <h1>🚗 CarDamage.AI</h1>
+        <p>Оценить повреждение авто за 3 секунды</p>
+        <p>Вместо часа работы эксперта — одна фотография. REST API для автоматической детекции повреждений.</p>
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">Попробовать бесплатно</button>
+            <button class="btn btn-secondary">Документация</button>
+        </div>
+    </div>
+
+    <div class="demo-section" id="demo">
+        <h2>Попробовать прямо сейчас</h2>
         
-        <!-- Python Tab -->
-        <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-            <h3 class="text-xl font-bold mb-4">🐍 Python</h3>
-            <pre class="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto text-sm"><code>import requests
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">Нажми или загрузи фото авто</div>
+            <div class="upload-subtext">PNG, JPG, WebP до 10MB</div>
+        </div>
+
+        <input type="file" id="imageInput" accept="image/jpeg,image/png,image/webp">
+
+        <div class="preview-container" id="previewContainer">
+            <img id="imagePreview" alt="Preview">
+            <canvas id="analysisCanvas"></canvas>
+            <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()">Анализировать</button>
+            <div class="legend" id="legend"></div>
+        </div>
+    </div>
+
+    <div class="section" id="pricing">
+        <h2>Ценообразование</h2>
+        <div class="pricing">
+            <div class="price-card">
+                <h3>Free</h3>
+                <div class="price">$0</div>
+                <div class="period">/месяц</div>
+                <div class="features">
+                    <div class="feature">✓ 10 анализов/месяц</div>
+                    <div class="feature">✓ Web interface</div>
+                    <div class="feature">✗ API доступ</div>
+                </div>
+                <button class="btn btn-primary">Начать</button>
+            </div>
+
+            <div class="price-card popular">
+                <div style="position: absolute; top: -15px; right: 20px; background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600;">Популярный</div>
+                <h3>Starter</h3>
+                <div class="price">$29</div>
+                <div class="period">/месяц</div>
+                <div class="features">
+                    <div class="feature">✓ 1,000 анализов</div>
+                    <div class="feature">✓ Web + REST API</div>
+                    <div class="feature">✓ Email support</div>
+                </div>
+                <button class="btn btn-primary">Выбрать</button>
+            </div>
+
+            <div class="price-card">
+                <h3>Pro</h3>
+                <div class="price">$99</div>
+                <div class="period">/месяц</div>
+                <div class="features">
+                    <div class="feature">✓ 10,000 анализов</div>
+                    <div class="feature">✓ Web + REST API</div>
+                    <div class="feature">✓ Priority support</div>
+                </div>
+                <button class="btn btn-primary">Выбрать</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Кем используется</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>🏪 Авто-маркетплейсы</h3>
+                <p><strong>Auto.ru:</strong> автоматизировали приёмку авто.</p>
+                <p><strong>Экономия:</strong> 20 часов/неделю на экспертизе</p>
+            </div>
+            <div class="card">
+                <h3>🛡️ Страховые компании</h3>
+                <p><strong>Первая БЛ:</strong> быстрая оценка ущерба в полях.</p>
+                <p><strong>Экономия:</strong> $200 на экспертизу за каждый случай</p>
+            </div>
+            <div class="card">
+                <h3>👨‍🔧 Независимые оценщики</h3>
+                <p>Помощь при осмотре, документирование ущерба.</p>
+                <p><strong>Экономия:</strong> 30 минут на машину</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="faq">
+        <h2>Частые вопросы</h2>
+        <div class="faq">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Какая точность модели?
+                    <span>▼</span>
+                </div>
+                <div class="faq-answer">
+                    mAP 0.87 на test датасете из 5,000 фото. Обнаруживает: царапины, вмятины, трещины, разбитое стекло, вмятины на боках.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Как быстро ответ API?
+                    <span>▼</span>
+                </div>
+                <div class="faq-answer">
+                    Средний ответ: 1.2 секунды. Максимум: 3 секунды (для больших фото). Зависит от размера и качества изображения.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Какие форматы фото поддерживаются?
+                    <span>▼</span>
+                </div>
+                <div class="faq-answer">
+                    JPG, PNG, WebP. Размер до 10MB. Рекомендуемое разрешение: 720x480 и выше.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Есть ли обучение модели на моих данных?
+                    <span>▼</span>
+                </div>
+                <div class="faq-answer">
+                    Да, в плане Enterprise. Свяжись с нами: support@yourdomain.by
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Где хранятся мои фото?
+                    <span>▼</span>
+                </div>
+                <div class="faq-answer">
+                    Фото удаляются сразу после анализа. Не сохраняются на серверах. Полная конфиденциальность.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Примеры использования</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>🐍 Python</h3>
+                <div class="code-example">
+                    <pre>import requests
 
 API_URL = "https://car-damage-api-production.up.railway.app/api/detect"
 API_KEY = "test-free-key"
@@ -282,13 +574,13 @@ with open("car.jpg", "rb") as f:
     response = requests.post(API_URL, files=files, headers=headers)
 
 data = response.json()
-print(f"Найдено повреждений: {data['count']}")                        </code></pre>
-        </div>
-
-        <!-- JavaScript Tab -->
-        <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-            <h3 class="text-xl font-bold mb-4">💻 JavaScript</h3>
-            <pre class="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto text-sm"><code>const form = new FormData();
+print(f"Найдено повреждений: {data['count']}")</pre>
+                </div>
+            </div>
+            <div class="card">
+                <h3>💻 JavaScript</h3>
+                <div class="code-example">
+                    <pre>const form = new FormData();
 form.append("file", fileInput.files[0]);
 
 fetch("https://car-damage-api-production.up.railway.app/api/detect", {
@@ -297,221 +589,157 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
   body: form
 })
 .then(r => r.json())
-.then(data => console.log(data));</code></pre>
-        </div>
-
-        <!-- cURL Tab -->
-        <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-            <h3 class="text-xl font-bold mb-4">🔧 cURL</h3>
-            <pre class="bg-gray-900 text-green-400 p-4 rounded overflow-x-auto text-sm"><code>curl -X POST "https://car-damage-api-production.up.railway.app/api/detect" \
+.then(data => console.log(data));</pre>
+                </div>
+            </div>
+            <div class="card">
+                <h3>🔧 cURL</h3>
+                <div class="code-example">
+                    <pre>curl -X POST "https://car-damage-api-production.up.railway.app/api/detect" \
   -H "X-API-Key: test-free-key" \
-  -F "file=@car.jpg"</code></pre>
+  -F "file=@car.jpg"</pre>
+                </div>
+            </div>
         </div>
-
-        <div class="text-center mt-8">
-            <p class="text-gray-600 mb-4">📚 Полная документация API:</p>
-            <a href="https://car-damage-api-production.up.railway.app/docs" 
-               target="_blank"
-               class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 inline-block">
-                Swagger UI →
-            </a>
+        <div style="text-align: center; margin-top: 40px;">
+            <p style="color: white; margin-bottom: 20px;">📚 Полная документация API:</p>
+            <button class="btn btn-primary">Swagger UI →</button>
         </div>
     </div>
-</section>
 
+    <footer>
+        <h3>CarDamage.AI</h3>
+        <p>REST API для детекции повреждений авто</p>
+        <hr style="margin: 20px 0; opacity: 0.3;">
+        <p>support@yourdomain.by | Telegram: @yourname</p>
+        <p style="margin-top: 20px; opacity: 0.7;">© 2024 CarDamage.AI. Все права защищены.</p>
+    </footer>
 
-<!-- FOOTER + CTA -->  
-<section class="bg-blue-600 text-white py-16">  
-    <div class="max-w-6xl mx-auto px-4 text-center">  
-        <h2 class="text-3xl font-bold mb-4">Готов начать?</h2>  
-        <p class="text-xl mb-8">Попробуй бесплатно. Никакой карты не нужно.</p>  
-        <button class="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100">  
-            Запустить демо  
-        </button>  
-    </div>  
-</section>  
-
-<!-- FOOTER -->  
-<footer class="bg-gray-900 text-gray-400 py-8">  
-    <div class="max-w-6xl mx-auto px-4">  
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">  
-            <div>  
-                <h4 class="text-white font-bold mb-4">CarDamage.AI</h4>  
-                <p class="text-sm">REST API для детекции повреждений авто</p>  
-            </div>  
-            <div>  
-                <h4 class="text-white font-bold mb-4">Контакты</h4>  
-                <p class="text-sm">support@yourdomain.by</p>  
-                <p class="text-sm">Telegram: @yourname</p>  
-            </div>  
-            <div>  
-                <h4 class="text-white font-bold mb-4">Ресурсы</h4>  
-                <p class="text-sm"><a href="#" class="hover:text-white">API Документация</a></p>  
-                <p class="text-sm"><a href="#" class="hover:text-white">GitHub</a></p>  
-            </div>  
-        </div>  
-        <div class="border-t border-gray-700 pt-8 text-center text-sm">  
-            <p>&copy; 2024 CarDamage.AI. Все права защищены.</p>  
-        </div>  
-    </div>  
-</footer>  
-
-<script>
-    const API_URL = "/api/detect";
-    const API_KEY = "test-free-key";
-
-    // Русские названия класса с цветами
-    const damageLabels = {
-        'mirror_right': { ru: 'Зеркало справа', color: '#EF4444' },
-        'mirror_left': { ru: 'Зеркало слева', color: '#F97316' },
-        'bumper_front': { ru: 'Бампер спереди', color: '#EAB308' },
-        'bumper_rear': { ru: 'Бампер сзади', color: '#BFDBFE' },
-        'headlight_left': { ru: 'Фара слева', color: '#34D399' },
-        'headlight_right': { ru: 'Фара справа', color: '#60A5FA' },
-        'tail_light_left': { ru: 'Стоп-сигнал слева', color: '#A78BFA' },
-        'tail_light_right': { ru: 'Стоп-сигнал справа', color: '#F472B6' },
-        'dent': { ru: 'Вмятина', color: '#FB923C' },
-        'scratch': { ru: 'Царапина', color: '#FCD34D' },
-        'crack': { ru: 'Трещина', color: '#DC2626' }
-    };
-
-    function drawBoundingBoxes(image, detections) {
-        const canvas = document.getElementById('outputCanvas');
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const canvas = document.getElementById('analysisCanvas');
         const ctx = canvas.getContext('2d');
+        const legend = document.getElementById('legend');
+        const analyzeBtn = document.getElementById('analyzeBtn');
 
-        // Устанавливаем размеры canvas в соответствии с изображением
-        canvas.width = image.width;
-        canvas.height = image.height;
+        const colorMap = {
+            'царапины': '#FF6B6B',
+            'вмятины': '#4ECDC4',
+            'трещины': '#FFE66D',
+            'разбитое стекло': '#95E1D3',
+            'зеркало': '#C7CEEA',
+            'бампер': '#FF8B94',
+            'фара': '#A8D8EA',
+            'повреждение': '#AA96DA'
+        };
 
-        // Рисуем изображение
-        ctx.drawImage(image, 0, 0);
-
-        // Рисуем bounding boxes
-        detections.forEach(detection => {
-            const bbox = detection.bbox;
-            const labelInfo = damageLabels[detection.class] || { ru: detection.class, color: '#06B6D4' };
-            
-            // Рисуем прямоугольник
-            ctx.strokeStyle = labelInfo.color;
-            ctx.lineWidth = 3;
-            ctx.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
-
-            // Рисуем фон для текста
-            const fontSize = 16;
-            ctx.font = `bold ${fontSize}px Arial`;
-            const textWidth = ctx.measureText(labelInfo.ru).width;
-            const padding = 5;
-
-            ctx.fillStyle = labelInfo.color;
-            ctx.fillRect(bbox.x, bbox.y - fontSize - 2 * padding, textWidth + 2 * padding, fontSize + 2 * padding);
-
-            // Рисуем текст
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = `bold ${fontSize}px Arial`;
-            ctx.fillText(labelInfo.ru, bbox.x + padding, bbox.y - padding);
+        uploadArea.addEventListener('click', () => imageInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
         });
-    }
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) handleImageSelect(files[0]);
+        });
 
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const file = document.getElementById('imageInput').files[0];
-        if (!file) return;
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleImageSelect(e.target.files[0]);
+        });
 
-        const resultDiv = document.getElementById('result');
-        const resultContent = document.getElementById('resultContent');
+        function handleImageSelect(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                previewContainer.classList.add('active');
+                canvas.style.display = 'none';
+                legend.classList.remove('active');
+                legend.innerHTML = '';
+            };
+            reader.readAsDataURL(file);
+        }
 
-        resultDiv.classList.remove('hidden');
-        resultContent.innerHTML = '<p class="text-gray-500">⏳ Анализирую изображение...</p>';
+        async function analyzeImage() {
+            if (!imageInput.files[0]) return;
 
-        try {
-            // Загружаем изображение для рисования
-            const image = new Image();
-            image.onload = async () => {
-                // Отправляем запрос к API
-                const formData = new FormData();
-                formData.append('file', file);
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Анализирую...';
 
-                const response = await fetch(API_URL, {
+            const formData = new FormData();
+            formData.append('file', imageInput.files[0]);
+
+            try {
+                const response = await fetch('https://car-damage-api-production.up.railway.app/api/detect', {
                     method: 'POST',
-                    headers: {
-                        'X-API-Key': API_KEY
-                    },
+                    headers: { 'X-API-Key': 'test-free-key' },
                     body: formData
                 });
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || `API Error: ${response.status}`);
-                }
-
                 const data = await response.json();
 
-                if (data.count === 0) {
-                    // Рисуем изображение без повреждений
-                    const canvas = document.getElementById('outputCanvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = image.width;
-                    canvas.height = image.height;
-                    ctx.drawImage(image, 0, 0);
+                canvas.width = imagePreview.width;
+                canvas.height = imagePreview.height;
+                ctx.drawImage(imagePreview, 0, 0);
 
-                    resultContent.innerHTML = `
-                        <div class="bg-blue-50 border border-blue-200 rounded p-4">
-                            <p class="text-blue-800">✅ Анализ завершён</p>
-                            <p class="text-gray-700 mt-2">Повреждения не обнаружены</p>
-                            <p class="text-sm text-gray-600 mt-2">Запросов осталось: ${data.requests_remaining}</p>
-                        </div>
-                    `;
+                if (data.detections && data.detections.length > 0) {
+                    drawDetections(data.detections);
+                    showLegend(data.detections);
                 } else {
-                    // Рисуем bounding boxes
-                    drawBoundingBoxes(image, data.detections);
-
-                    // Показываем легенду
-                    let html = `
-                        <div class="bg-green-50 border border-green-200 rounded p-4 mb-4">
-                            <p class="text-green-800 font-bold">✅ Найдено ${data.count} проблем</p>
-                            <p class="text-sm text-gray-600 mt-2">Запросов осталось: ${data.requests_remaining}</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                    `;
-
-                    data.detections.forEach((detection, index) => {
-                        const labelInfo = damageLabels[detection.class] || { ru: detection.class, color: '#06B6D4' };
-                        html += `
-                            <div class="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                <div style="width: 16px; height: 16px; background-color: ${labelInfo.color}; border-radius: 2px;"></div>
-                                <span class="text-sm font-medium text-gray-700">${labelInfo.ru}</span>
-                            </div>
-                        `;
-                    });
-
-                    html += '</div>';
-                    resultContent.innerHTML = html;
+                    legend.innerHTML = '<div class="legend-title">Повреждений не обнаружено</div>';
+                    legend.classList.add('active');
                 }
-            };
-            image.src = URL.createObjectURL(file);
-        } catch (error) {
-            resultContent.innerHTML = `
-                <div class="bg-red-50 border border-red-200 rounded p-4">
-                    <p class="text-red-800 font-bold">❌ Ошибка</p>
-                    <p class="text-sm text-red-700 mt-2">${error.message}</p>
-                </div>
-            `;
-            console.error('API Error:', error);
+
+                canvas.style.display = 'block';
+            } catch (error) {
+                alert('Ошибка анализа: ' + error.message);
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Анализировать';
+            }
         }
-    });
 
-    // Добавляем название файла при выборе
-    document.getElementById('imageInput').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const label = document.querySelector('label[for="imageInput"] p:first-child');
-            label.textContent = `📸 ${file.name}`;
+        function drawDetections(detections) {
+            detections.forEach(det => {
+                const [x1, y1, x2, y2] = det.box;
+                const color = colorMap[det.class] || '#999';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+                ctx.fillStyle = color;
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(det.class, x1 + 5, y1 - 5);
+            });
         }
-    });
 
-    // Переводим названия классов с русскими названиями
-    window.damageLabels = damageLabels;
-</script>
+        function showLegend(detections) {
+            const uniqueClasses = [...new Set(detections.map(d => d.class))];
+            let html = '<div class="legend-title">Найденные повреждения:</div>';
+            uniqueClasses.forEach(cls => {
+                const color = colorMap[cls] || '#999';
+                html += `<div class="legend-item">
+                    <div class="legend-color" style="background: ${color}"></div>
+                    <div class="legend-text">${cls}</div>
+                </div>`;
+            });
+            legend.innerHTML = html;
+            legend.classList.add('active');
+        }
 
-</body>  
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            const isActive = answer.classList.contains('active');
+            document.querySelectorAll('.faq-answer.active').forEach(el => {
+                el.classList.remove('active');
+            });
+            if (!isActive) answer.classList.add('active');
+        }
+    </script>
+</body>
 </html>
