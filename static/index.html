@@ -13,84 +13,106 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f8f9fa;
             color: #333;
-            line-height: 1.6;
         }
 
         header {
             background: white;
-            padding: 20px 40px;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
             display: flex;
+            gap: 0.5rem;
             align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
         }
 
-        nav a {
-            margin: 0 20px;
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
             text-decoration: none;
             color: #333;
-            font-weight: 500;
+            cursor: pointer;
             transition: color 0.3s;
         }
 
-        nav a:hover {
-            color: #667eea;
+        .nav-links a:hover {
+            color: #5b7cfa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            padding: 4rem 0;
         }
 
         .hero {
-            padding: 60px 40px;
             text-align: center;
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
         .hero h1 {
-            font-size: 48px;
-            margin-bottom: 10px;
-            font-weight: 700;
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
 
         .hero p {
-            font-size: 18px;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
             opacity: 0.9;
-            margin-bottom: 30px;
         }
 
-        .buttons {
+        .hero-buttons {
             display: flex;
-            gap: 15px;
+            gap: 1rem;
             justify-content: center;
-            margin-bottom: 50px;
         }
 
         .btn {
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: 0.75rem 2rem;
             border: none;
             border-radius: 8px;
+            font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s;
-            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-primary {
             background: white;
             color: #667eea;
+            font-weight: 600;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .btn-secondary {
@@ -106,412 +128,412 @@
 
         .demo-section {
             background: white;
-            padding: 40px;
-            margin: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            border-radius: 12px;
+            margin: 3rem 0;
         }
 
         .demo-section h2 {
+            margin-bottom: 2rem;
             text-align: center;
-            margin-bottom: 40px;
-            font-size: 28px;
-            color: #333;
         }
 
         .upload-area {
-            border: 2px dashed #667eea;
-            border-radius: 20px;
-            padding: 40px;
+            border: 2px dashed #5b7cfa;
+            border-radius: 16px;
+            padding: 3rem;
             text-align: center;
             cursor: pointer;
+            background: #f0f4ff;
             transition: all 0.3s;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            margin-bottom: 2rem;
         }
 
         .upload-area:hover {
-            border-color: #764ba2;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+            background: #e8ecff;
+            border-color: #4c6ef5;
         }
 
         .upload-area.dragover {
-            border-color: #667eea;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            background: #dde4ff;
+            border-color: #4c6ef5;
+        }
+
+        .upload-area input {
+            display: none;
         }
 
         .upload-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
 
-        .upload-text {
-            font-size: 20px;
-            font-weight: 600;
+        .upload-area h3 {
+            margin-bottom: 0.5rem;
             color: #333;
-            margin-bottom: 10px;
         }
 
-        .upload-subtext {
-            font-size: 14px;
+        .upload-area p {
             color: #999;
-        }
-
-        #imageInput {
-            display: none;
-        }
-
-        .preview-container {
-            margin-top: 30px;
-            display: none;
-        }
-
-        .preview-container.active {
-            display: block;
+            font-size: 0.9rem;
         }
 
         #imagePreview {
             max-width: 100%;
-            height: auto;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
         }
 
-        #analysisCanvas {
-            max-width: 100%;
-            height: auto;
-            border-radius: 12px;
+        #canvasContainer {
+            position: relative;
             display: none;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 2rem;
+            width: fit-content;
+        }
+
+        #resultCanvas {
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            display: block;
         }
 
         .analyze-btn {
-            display: block;
-            margin: 0 auto 20px;
-            padding: 12px 40px;
-            background: #667eea;
+            background: #5b7cfa;
             color: white;
+            padding: 0.75rem 3rem;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
             cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            display: none;
+            margin: 1rem auto;
             transition: all 0.3s;
         }
 
         .analyze-btn:hover {
-            background: #764ba2;
+            background: #4c6ef5;
             transform: translateY(-2px);
         }
 
         .analyze-btn:disabled {
-            background: #ccc;
+            background: #999;
             cursor: not-allowed;
+            transform: none;
         }
 
         .legend {
-            background: #f5f5f5;
-            padding: 20px;
+            background: #f8f9fa;
+            padding: 1.5rem;
             border-radius: 8px;
-            margin-top: 20px;
+            margin-top: 2rem;
             display: none;
         }
 
-        .legend.active {
-            display: block;
-        }
-
-        .legend-title {
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
+        .legend h3 {
+            margin-bottom: 1rem;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            padding: 5px 0;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
         }
 
         .legend-color {
             width: 20px;
             height: 20px;
-            border-radius: 3px;
-            margin-right: 10px;
-            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
         }
 
-        .legend-text {
-            font-size: 14px;
-            color: #555;
-        }
-
-        .section {
-            padding: 60px 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section h2 {
-            font-size: 32px;
-            margin-bottom: 40px;
-            color: white;
-            text-align: center;
-        }
-
-        .cards {
+        .pricing-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            gap: 2rem;
+            margin: 2rem 0;
         }
 
-        .card {
+        .pricing-card {
             background: white;
-            padding: 30px;
+            border: 2px solid #e0e0e0;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .card h3 {
-            font-size: 20px;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .card p {
-            color: #666;
-            line-height: 1.8;
-        }
-
-        .pricing {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-
-        .price-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
+            padding: 2rem;
             text-align: center;
-            position: relative;
         }
 
-        .price-card.popular {
-            border: 3px solid #667eea;
+        .pricing-card.popular {
+            border-color: #5b7cfa;
             transform: scale(1.05);
         }
 
-        .price-card h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
+        .pricing-card h3 {
+            margin-bottom: 0.5rem;
         }
 
         .price {
-            font-size: 36px;
-            color: #667eea;
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #5b7cfa;
+            margin: 1rem 0;
         }
 
-        .period {
+        .price-period {
             color: #999;
-            margin-bottom: 25px;
         }
 
         .features {
+            list-style: none;
+            margin: 1.5rem 0;
             text-align: left;
-            margin: 25px 0;
         }
 
-        .feature {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+        .features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        .feature:last-child {
-            border: none;
+        .features li:before {
+            content: "✓ ";
+            color: #5b7cfa;
+            font-weight: 700;
+            margin-right: 0.5rem;
+        }
+
+        .features li.disabled:before {
+            content: "✗ ";
+            color: #999;
+        }
+
+        .features li.disabled {
+            color: #999;
         }
 
         .faq {
-            margin-top: 40px;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .faq-item {
             background: white;
-            margin-bottom: 15px;
             border-radius: 8px;
+            margin-bottom: 1rem;
             overflow: hidden;
         }
 
         .faq-question {
-            padding: 20px;
+            padding: 1.5rem;
             cursor: pointer;
-            background: #f9f9f9;
+            background: white;
+            border: 1px solid #e0e0e0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: 600;
+            user-select: none;
         }
 
         .faq-question:hover {
-            background: #f0f0f0;
+            background: #f8f9fa;
         }
 
         .faq-answer {
-            padding: 20px;
+            padding: 1.5rem;
+            background: #f8f9fa;
             display: none;
-            color: #666;
-            line-height: 1.8;
+            border-top: 1px solid #e0e0e0;
         }
 
-        .faq-answer.active {
+        .faq-item.active .faq-answer {
             display: block;
         }
 
-        .code-example {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            overflow-x: auto;
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
         }
 
-        .code-example pre {
-            color: #333;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
+        .testimonial {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 4px solid #5b7cfa;
+        }
+
+        .testimonial h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .testimonial p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .code-example {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
         }
 
         footer {
-            background: #333;
+            background: #1e1e1e;
             color: white;
-            padding: 40px;
+            padding: 3rem 2rem;
             text-align: center;
         }
 
-        .color-scratches { background: #FF6B6B; }
-        .color-dents { background: #4ECDC4; }
-        .color-cracks { background: #FFE66D; }
-        .color-glass { background: #95E1D3; }
-        .color-mirror { background: #C7CEEA; }
-        .color-bumper { background: #FF8B94; }
-        .color-headlight { background: #A8D8EA; }
-        .color-other { background: #AA96DA; }
+        footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #5b7cfa;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">🚗 CarDamage.AI</div>
         <nav>
-            <a href="#demo">Demo</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#faq">FAQ</a>
+            <div class="logo">🚗 CarDamage.AI</div>
+            <ul class="nav-links">
+                <li><a onclick="scrollToSection('demo')">Demo</a></li>
+                <li><a onclick="scrollToSection('pricing')">Pricing</a></li>
+                <li><a onclick="scrollToSection('faq')">FAQ</a></li>
+            </ul>
         </nav>
     </header>
 
-    <div class="hero">
+    <section class="hero">
         <h1>🚗 CarDamage.AI</h1>
         <p>Оценить повреждение авто за 3 секунды</p>
-        <p>Вместо часа работы эксперта — одна фотография. REST API для автоматической детекции повреждений.</p>
-        <div class="buttons">
-            <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">Попробовать бесплатно</button>
-            <button class="btn btn-secondary">Документация</button>
+        <p style="font-size: 1rem; opacity: 0.8;">Вместо часа работы эксперта — одна фотография. REST API для автоматической детекции повреждений.</p>
+        <div class="hero-buttons">
+            <button class="btn btn-primary" onclick="scrollToSection('demo')">Попробовать бесплатно</button>
+            <button class="btn btn-secondary" onclick="alert('Документация API')">Документация</button>
         </div>
-    </div>
+    </section>
 
-    <div class="demo-section" id="demo">
-        <h2>Попробовать прямо сейчас</h2>
-        
-        <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">📸</div>
-            <div class="upload-text">Нажми или загрузи фото авто</div>
-            <div class="upload-subtext">PNG, JPG, WebP до 10MB</div>
+    <section id="demo" class="container">
+        <div class="demo-section">
+            <h2>Попробовать прямо сейчас</h2>
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="fileInput" accept="image/*">
+                <div class="upload-icon">📸</div>
+                <h3>Нажми или загрузи фото авто</h3>
+                <p>PNG, JPG, WebP до 10MB</p>
+                <img id="imagePreview" alt="Preview">
+            </div>
+            <button class="analyze-btn" id="analyzeBtn">Анализировать</button>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Анализирую фото...</p>
+            </div>
+            <div class="error-message" id="errorMessage"></div>
+            <div id="canvasContainer">
+                <canvas id="resultCanvas"></canvas>
+            </div>
+            <div class="legend" id="legend">
+                <h3>Найденные повреждения:</h3>
+                <div id="legendContent"></div>
+            </div>
         </div>
+    </section>
 
-        <input type="file" id="imageInput" accept="image/jpeg,image/png,image/webp">
-
-        <div class="preview-container" id="previewContainer">
-            <img id="imagePreview" alt="Preview">
-            <canvas id="analysisCanvas"></canvas>
-            <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()">Анализировать</button>
-            <div class="legend" id="legend"></div>
-        </div>
-    </div>
-
-    <div class="section" id="pricing">
-        <h2>Ценообразование</h2>
-        <div class="pricing">
-            <div class="price-card">
+    <section id="pricing" class="container">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Ценообразование</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card">
                 <h3>Free</h3>
-                <div class="price">$0</div>
-                <div class="period">/месяц</div>
-                <div class="features">
-                    <div class="feature">✓ 10 анализов/месяц</div>
-                    <div class="feature">✓ Web interface</div>
-                    <div class="feature">✗ API доступ</div>
-                </div>
+                <div class="price">$0<span class="price-period">/месяц</span></div>
+                <ul class="features">
+                    <li>10 анализов/месяц</li>
+                    <li>Web interface</li>
+                    <li class="disabled">API доступ</li>
+                </ul>
                 <button class="btn btn-primary">Начать</button>
             </div>
-
-            <div class="price-card popular">
-                <div style="position: absolute; top: -15px; right: 20px; background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600;">Популярный</div>
+            <div class="pricing-card popular">
+                <div style="color: #5b7cfa; font-size: 0.85rem; margin-bottom: 1rem;">Популярный</div>
                 <h3>Starter</h3>
-                <div class="price">$29</div>
-                <div class="period">/месяц</div>
-                <div class="features">
-                    <div class="feature">✓ 1,000 анализов</div>
-                    <div class="feature">✓ Web + REST API</div>
-                    <div class="feature">✓ Email support</div>
-                </div>
+                <div class="price">$29<span class="price-period">/месяц</span></div>
+                <ul class="features">
+                    <li>1,000 анализов</li>
+                    <li>Web + REST API</li>
+                    <li>Email support</li>
+                </ul>
                 <button class="btn btn-primary">Выбрать</button>
             </div>
-
-            <div class="price-card">
+            <div class="pricing-card">
                 <h3>Pro</h3>
-                <div class="price">$99</div>
-                <div class="period">/месяц</div>
-                <div class="features">
-                    <div class="feature">✓ 10,000 анализов</div>
-                    <div class="feature">✓ Web + REST API</div>
-                    <div class="feature">✓ Priority support</div>
-                </div>
+                <div class="price">$99<span class="price-period">/месяц</span></div>
+                <ul class="features">
+                    <li>10,000 анализов</li>
+                    <li>Web + REST API</li>
+                    <li>Priority support</li>
+                </ul>
                 <button class="btn btn-primary">Выбрать</button>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="section">
-        <h2>Кем используется</h2>
-        <div class="cards">
-            <div class="card">
+    <section class="container">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Кем используется</h2>
+        <div class="testimonials">
+            <div class="testimonial">
                 <h3>🏪 Авто-маркетплейсы</h3>
-                <p><strong>Auto.ru:</strong> автоматизировали приёмку авто.</p>
-                <p><strong>Экономия:</strong> 20 часов/неделю на экспертизе</p>
+                <p><strong>Auto.ru:</strong> автоматизировали приёмку авто.<br><strong>Экономия:</strong> 20 часов/неделю на экспертизе</p>
             </div>
-            <div class="card">
+            <div class="testimonial">
                 <h3>🛡️ Страховые компании</h3>
-                <p><strong>Первая БЛ:</strong> быстрая оценка ущерба в полях.</p>
-                <p><strong>Экономия:</strong> $200 на экспертизу за каждый случай</p>
+                <p><strong>Первая БЛ:</strong> быстрая оценка ущерба в полях.<br><strong>Экономия:</strong> $200 на экспертизу за каждый случай</p>
             </div>
-            <div class="card">
+            <div class="testimonial">
                 <h3>👨‍🔧 Независимые оценщики</h3>
-                <p>Помощь при осмотре, документирование ущерба.</p>
-                <p><strong>Экономия:</strong> 30 минут на машину</p>
+                <p>Помощь при осмотре, документирование ущерба.<br><strong>Экономия:</strong> 30 минут на машину</p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="section" id="faq">
-        <h2>Частые вопросы</h2>
+    <section id="faq" class="container">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Частые вопросы</h2>
         <div class="faq">
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    Какая точность модели?
+                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    <span>Какая точность модели?</span>
                     <span>▼</span>
                 </div>
                 <div class="faq-answer">
@@ -519,8 +541,8 @@
                 </div>
             </div>
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    Как быстро ответ API?
+                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    <span>Как быстро ответ API?</span>
                     <span>▼</span>
                 </div>
                 <div class="faq-answer">
@@ -528,8 +550,8 @@
                 </div>
             </div>
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    Какие форматы фото поддерживаются?
+                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    <span>Какие форматы фото поддерживаются?</span>
                     <span>▼</span>
                 </div>
                 <div class="faq-answer">
@@ -537,8 +559,8 @@
                 </div>
             </div>
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    Есть ли обучение модели на моих данных?
+                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    <span>Есть ли обучение модели на моих данных?</span>
                     <span>▼</span>
                 </div>
                 <div class="faq-answer">
@@ -546,8 +568,8 @@
                 </div>
             </div>
             <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    Где хранятся мои фото?
+                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+                    <span>Где хранятся мои фото?</span>
                     <span>▼</span>
                 </div>
                 <div class="faq-answer">
@@ -555,15 +577,14 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="section">
-        <h2>Примеры использования</h2>
-        <div class="cards">
-            <div class="card">
+    <section class="container">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Примеры использования</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            <div>
                 <h3>🐍 Python</h3>
-                <div class="code-example">
-                    <pre>import requests
+                <div class="code-example">import requests
 
 API_URL = "https://car-damage-api-production.up.railway.app/api/detect"
 API_KEY = "test-free-key"
@@ -574,13 +595,11 @@ with open("car.jpg", "rb") as f:
     response = requests.post(API_URL, files=files, headers=headers)
 
 data = response.json()
-print(f"Найдено повреждений: {data['count']}")</pre>
-                </div>
+print(f"Найдено повреждений: {data['count']}")</div>
             </div>
-            <div class="card">
+            <div>
                 <h3>💻 JavaScript</h3>
-                <div class="code-example">
-                    <pre>const form = new FormData();
+                <div class="code-example">const form = new FormData();
 form.append("file", fileInput.files[0]);
 
 fetch("https://car-damage-api-production.up.railway.app/api/detect", {
@@ -589,156 +608,193 @@ fetch("https://car-damage-api-production.up.railway.app/api/detect", {
   body: form
 })
 .then(r => r.json())
-.then(data => console.log(data));</pre>
-                </div>
+.then(data => console.log(data));</div>
             </div>
-            <div class="card">
+            <div>
                 <h3>🔧 cURL</h3>
-                <div class="code-example">
-                    <pre>curl -X POST "https://car-damage-api-production.up.railway.app/api/detect" \
+                <div class="code-example">curl -X POST "https://car-damage-api-production.up.railway.app/api/detect" \
   -H "X-API-Key: test-free-key" \
-  -F "file=@car.jpg"</pre>
-                </div>
+  -F "file=@car.jpg"</div>
             </div>
         </div>
-        <div style="text-align: center; margin-top: 40px;">
-            <p style="color: white; margin-bottom: 20px;">📚 Полная документация API:</p>
-            <button class="btn btn-primary">Swagger UI →</button>
-        </div>
-    </div>
+        <p style="text-align: center; margin-top: 2rem;">📚 <strong><a href="#" style="color: #5b7cfa; text-decoration: none;">Полная документация API: Swagger UI →</a></strong></p>
+    </section>
 
     <footer>
-        <h3>CarDamage.AI</h3>
-        <p>REST API для детекции повреждений авто</p>
-        <hr style="margin: 20px 0; opacity: 0.3;">
         <p>support@yourdomain.by | Telegram: @yourname</p>
-        <p style="margin-top: 20px; opacity: 0.7;">© 2024 CarDamage.AI. Все права защищены.</p>
+        <p>© 2024 CarDamage.AI. Все права защищены.</p>
     </footer>
 
     <script>
-        const uploadArea = document.getElementById('uploadArea');
-        const imageInput = document.getElementById('imageInput');
-        const previewContainer = document.getElementById('previewContainer');
-        const imagePreview = document.getElementById('imagePreview');
-        const canvas = document.getElementById('analysisCanvas');
-        const ctx = canvas.getContext('2d');
-        const legend = document.getElementById('legend');
-        const analyzeBtn = document.getElementById('analyzeBtn');
+        const API_URL = 'https://car-damage-api-production.up.railway.app/api/detect';
+        const API_KEY = 'test-free-key';
 
-        const colorMap = {
-            'царапины': '#FF6B6B',
-            'вмятины': '#4ECDC4',
-            'трещины': '#FFE66D',
-            'разбитое стекло': '#95E1D3',
-            'зеркало': '#C7CEEA',
-            'бампер': '#FF8B94',
-            'фара': '#A8D8EA',
-            'повреждение': '#AA96DA'
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const legend = document.getElementById('legend');
+        const legendContent = document.getElementById('legendContent');
+
+        const damageColors = {
+            'Царапина': '#FF6B6B',
+            'Вмятина': '#4ECDC4',
+            'Трещина': '#FFE66D',
+            'Разбитое стекло': '#A8E6CF',
+            'Зеркало повреждено': '#FF8B94',
+            'Фара повреждена': '#C7CEEA',
+            'Бампер повреждён': '#B4A7D6'
         };
 
-        uploadArea.addEventListener('click', () => imageInput.click());
+        // Upload area click
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                showPreview(e.target.files[0]);
+            }
+        });
+
+        // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
         });
-        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) handleImageSelect(files[0]);
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                showPreview(e.dataTransfer.files[0]);
+            }
         });
 
-        imageInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) handleImageSelect(e.target.files[0]);
-        });
-
-        function handleImageSelect(file) {
+        // Show preview
+        function showPreview(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 imagePreview.src = e.target.result;
-                previewContainer.classList.add('active');
-                canvas.style.display = 'none';
-                legend.classList.remove('active');
-                legend.innerHTML = '';
+                imagePreview.style.display = 'block';
+                analyzeBtn.style.display = 'block';
+                canvasContainer.style.display = 'none';
+                legend.style.display = 'none';
+                errorMessage.style.display = 'none';
             };
             reader.readAsDataURL(file);
         }
 
-        async function analyzeImage() {
-            if (!imageInput.files[0]) return;
+        // Analyze button
+        analyzeBtn.addEventListener('click', analyzeImage);
 
-            analyzeBtn.disabled = true;
-            analyzeBtn.textContent = 'Анализирую...';
+        async function analyzeImage() {
+            if (!fileInput.files[0]) return;
 
             const formData = new FormData();
-            formData.append('file', imageInput.files[0]);
+            formData.append('file', fileInput.files[0]);
+
+            loading.style.display = 'block';
+            analyzeBtn.disabled = true;
+            errorMessage.style.display = 'none';
 
             try {
-                const response = await fetch('https://car-damage-api-production.up.railway.app/api/detect', {
+                const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'X-API-Key': 'test-free-key' },
+                    headers: {
+                        'X-API-Key': API_KEY
+                    },
                     body: formData
                 });
 
-                const data = await response.json();
-
-                canvas.width = imagePreview.width;
-                canvas.height = imagePreview.height;
-                ctx.drawImage(imagePreview, 0, 0);
-
-                if (data.detections && data.detections.length > 0) {
-                    drawDetections(data.detections);
-                    showLegend(data.detections);
-                } else {
-                    legend.innerHTML = '<div class="legend-title">Повреждений не обнаружено</div>';
-                    legend.classList.add('active');
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
                 }
 
-                canvas.style.display = 'block';
+                const data = await response.json();
+
+                if (data.results && Array.isArray(data.results)) {
+                    drawResults(data.results);
+                } else {
+                    throw new Error('Invalid API response format');
+                }
             } catch (error) {
-                alert('Ошибка анализа: ' + error.message);
+                showError(error.message);
             } finally {
+                loading.style.display = 'none';
                 analyzeBtn.disabled = false;
-                analyzeBtn.textContent = 'Анализировать';
             }
         }
 
-        function drawDetections(detections) {
-            detections.forEach(det => {
-                const [x1, y1, x2, y2] = det.box;
-                const color = colorMap[det.class] || '#999';
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 3;
-                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+        function drawResults(results) {
+            const img = new Image();
+            img.onload = () => {
+                resultCanvas.width = img.width;
+                resultCanvas.height = img.height;
+                const ctx = resultCanvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
 
-                ctx.fillStyle = color;
-                ctx.font = 'bold 14px Arial';
-                ctx.fillText(det.class, x1 + 5, y1 - 5);
-            });
+                const damages = {};
+
+                results.forEach(result => {
+                    const [x1, y1, x2, y2] = result.bbox;
+                    const className = result.class || 'Неизвестное повреждение';
+                    const color = damageColors[className] || '#FF6B6B';
+
+                    // Draw rectangle
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+                    // Draw label background
+                    const label = className;
+                    ctx.font = 'bold 14px Arial';
+                    const textWidth = ctx.measureText(label).width;
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x1, y1 - 25, textWidth + 8, 22);
+
+                    // Draw label text
+                    ctx.fillStyle = 'white';
+                    ctx.fillText(label, x1 + 4, y1 - 8);
+
+                    // Count damages
+                    damages[className] = (damages[className] || 0) + 1;
+                });
+
+                // Show canvas and legend
+                canvasContainer.style.display = 'block';
+                legend.style.display = 'block';
+
+                // Fill legend
+                legendContent.innerHTML = '';
+                Object.entries(damages).forEach(([className, count]) => {
+                    const color = damageColors[className] || '#FF6B6B';
+                    legendContent.innerHTML += `
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: ${color}"></div>
+                            <span>${className} (${count})</span>
+                        </div>
+                    `;
+                });
+            };
+            img.src = imagePreview.src;
         }
 
-        function showLegend(detections) {
-            const uniqueClasses = [...new Set(detections.map(d => d.class))];
-            let html = '<div class="legend-title">Найденные повреждения:</div>';
-            uniqueClasses.forEach(cls => {
-                const color = colorMap[cls] || '#999';
-                html += `<div class="legend-item">
-                    <div class="legend-color" style="background: ${color}"></div>
-                    <div class="legend-text">${cls}</div>
-                </div>`;
-            });
-            legend.innerHTML = html;
-            legend.classList.add('active');
+        function showError(message) {
+            errorMessage.textContent = '❌ Ошибка: ' + message;
+            errorMessage.style.display = 'block';
         }
 
-        function toggleFaq(element) {
-            const answer = element.nextElementSibling;
-            const isActive = answer.classList.contains('active');
-            document.querySelectorAll('.faq-answer.active').forEach(el => {
-                el.classList.remove('active');
-            });
-            if (!isActive) answer.classList.add('active');
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
