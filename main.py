@@ -548,13 +548,9 @@ async def get_me(session_token: str = Header(..., alias="X-Session-Token"), db: 
     user = get_user_by_session_token(session_token, db)
     check_reset_date(user, db)
     
-    # Для free плана: requests_remaining считаем через balance
-    if user.plan == "free":
-        requests_remaining = int(user.balance / PLAN_PRICES["free"]["cost_per_request"])
-        requests_used = PLAN_PRICES["free"]["limit"] - requests_remaining
-    else:
-        requests_used = user.used
-        requests_remaining = max(0, user.limit - user.used)
+    # Для всех планов используем поле 'used' как источник истины
+    requests_used = user.used
+    requests_remaining = max(0, user.limit - user.used)
     
     return {
         "status": "ok",
