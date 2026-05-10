@@ -7,599 +7,470 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <style>
-        .modal-hidden { display: none; }
-        .modal-visible { display: flex; }
-        code { font-family: 'Courier New', monospace; }
-    </style>
-
 </head>
 <body class="bg-gray-50">
 
-<!-- РЕГИСТРАЦИОННАЯ МОДАЛЬ -->
-<div id="registerModal" class="modal-hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-8 w-96 shadow-lg">
-        <h2 class="text-2xl font-bold mb-6">Начни бесплатно</h2>
-        
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-2">Email</label>
-            <input   
-                id="emailInput"   
-                type="email"   
-                placeholder="your@email.com"  
-                class="w-full border border-gray-300 rounded px-3 py-2"  
-            >
-        </div>
-
-        <div id="selectedPlan" class="mb-4 p-3 bg-blue-50 rounded text-sm">
-            Выбранный план: <strong id="planName">Free</strong>
-        </div>
-
-        <button   
-            onclick="registerUser()"  
-            class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 mb-2"  
-        >
-            Создать аккаунт
-        </button>
-
-        <button   
-            onclick="closeRegisterModal()"  
-            class="w-full border border-gray-300 py-2 rounded font-bold hover:bg-gray-50"  
-        >
-            Отмена
-        </button>
-
-        <div id="registerError" class="mt-4 text-red-600 text-sm"></div>
-    </div>
-</div>
-
-<!-- HEADER -->
+<!-- ==================== HEADER ==================== -->
 <header class="bg-white border-b">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-blue-600">🚗 KastikCars</h1>
-        <nav class="space-x-6">
-            <a href="#examples" class="hover:text-blue-600">Примеры</a>
-            <a href="#pricing" class="hover:text-blue-600">Pricing</a>
-            <a href="#faq" class="hover:text-blue-600">FAQ</a>
-        </nav>
-        <div id="userInfo" class="hidden flex items-center gap-4">
-            <div class="text-sm">
-                <p id="userName" class="font-bold"></p>
-                <p id="userEmail" class="text-gray-600"></p>
-            </div>
-            <button onclick="logout()" class="text-red-600 hover:text-red-700 font-bold">Выход</button>
+    <nav class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="text-2xl font-bold text-blue-600">KastikCars</div>
+        <div class="flex gap-6 items-center">
+            <a href="#demo" class="text-gray-700 hover:text-blue-600">Demo</a>
+            <a href="#pricing" class="text-gray-700 hover:text-blue-600">Pricing</a>
+            <a href="#faq" class="text-gray-700 hover:text-blue-600">FAQ</a>
+            <a href="#code" class="text-gray-700 hover:text-blue-600">Code Examples</a>
+            <button onclick="openRegisterModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Зарегистрироваться
+            </button>
         </div>
-        <button id="registerBtn" onclick="selectPlan('free'); openRegisterModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Зарегистрироваться
-        </button>
-    </div>
+    </nav>
 </header>
 
-<!-- LOGO SECTION -->
-<section class="bg-white border-b py-8">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-        <img src="/static/logo.png" alt="KastikCars Logo" class="h-32 mx-auto">
+<!-- ==================== LOGO SECTION ==================== -->
+<section class="bg-white border-b py-6">
+    <div class="max-w-7xl mx-auto px-4 flex justify-center">
+        <img src="/static/logo.png" alt="KastikCars Logo" class="h-32 object-contain">
     </div>
 </section>
 
-<!-- HERO -->
-<section class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-        <h2 class="text-4xl font-bold mb-4">Оценить повреждение авто за 3 секунды</h2>
-        <p class="text-xl mb-8">Вместо часа работы эксперта — одна фотография. REST API для автоматической детекции повреждений.</p>
-        <button   
-            onclick="selectPlan('free'); openRegisterModal()"  
-            class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-100"  
-        >
+<!-- ==================== HERO ==================== -->
+<section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <h1 class="text-5xl font-bold mb-4">Автоматическая детекция повреждений</h1>
+        <p class="text-xl mb-8 text-blue-100">Анализируйте повреждения автомобилей с помощью AI за секунды</p>
+        <button onclick="openRegisterModal()" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100">
             Попробовать бесплатно
         </button>
     </div>
 </section>
 
-<!-- DEMO SECTION -->
-<section id="demo" class="py-16 bg-white hidden">
-    <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-12 text-center">Анализ повреждений</h2>
+<!-- ==================== REGISTRATION MODAL ==================== -->
+<div id="registerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <h2 class="text-2xl font-bold mb-6">Регистрация</h2>
+        <input type="email" id="registerEmail" placeholder="Ваш email" class="w-full border px-4 py-2 rounded mb-4">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Загрузка фото (слева) -->
-            <div class="flex flex-col">
-                <div class="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center bg-blue-50">
-                    <input   
-                        id="photoInput"   
-                        type="file"   
-                        accept="image/*"  
-                        class="hidden"  
-                    >
-                    <button   
-                        onclick="document.getElementById('photoInput').click()"  
-                        class="bg-blue-600 text-white px-6 py-3 rounded font-bold hover:bg-blue-700"  
-                    >
-                        📸 Загрузить фото
-                    </button>
-                    <p class="text-gray-600 text-sm mt-4">PNG, JPG, WebP до 10MB</p>
-                </div>
+        <div class="mb-6">
+            <label class="block text-sm font-semibold mb-3">Выберите план:</label>
+            <div class="space-y-2">
+                <label class="flex items-center">
+                    <input type="radio" name="plan" value="free" checked class="mr-2"> Free - $0/месяц (pay-per-use)
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" name="plan" value="starter" class="mr-2"> Starter - $29/месяц (1000 запросов)
+                </label>
+                <label class="flex items-center">
+                    <input type="radio" name="plan" value="pro" class="mr-2"> Pro - $99/месяц (10000 запросов)
+                </label>
+            </div>
+        </div>
+        
+        <button onclick="registerUser()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 mb-2">
+            Зарегистрироваться
+        </button>
+        <button onclick="closeRegisterModal()" class="w-full bg-gray-200 text-gray-800 py-2 rounded font-bold hover:bg-gray-300">
+            Закрыть
+        </button>
+    </div>
+</div>
+
+<!-- ==================== DEMO SECTION ==================== -->
+<section id="demo" class="max-w-7xl mx-auto px-4 py-16">
+    <h2 class="text-3xl font-bold mb-8">Demo</h2>
+    
+    <div id="beforeLoginDemo" class="bg-blue-50 border-2 border-blue-300 rounded-lg p-8 text-center">
+        <p class="text-lg text-gray-700 mb-4">Зарегистрируйтесь, чтобы протестировать детекцию повреждений</p>
+        <button onclick="openRegisterModal()" class="bg-blue-600 text-white px-6 py-3 rounded font-bold hover:bg-blue-700">
+            Начать тестирование
+        </button>
+    </div>
+    
+    <div id="afterLoginDemo" class="hidden">
+        <div class="grid grid-cols-2 gap-8">
+            <!-- ===== LEFT: UPLOAD & ORIGINAL IMAGE ===== -->
+            <div>
+                <h3 class="text-xl font-bold mb-4">Загрузить фото</h3>
                 
-                <!-- Изображение после загрузки (слева) -->
-                <div id="imageContainer" class="hidden mt-4 flex-1">
-                    <h3 class="text-lg font-bold mb-3">Загруженное фото</h3>
-                    <div class="relative bg-gray-200 rounded overflow-hidden" style="max-width: 100%; aspect-ratio: 1;">
-                        <img id="uploadedImage" src="" alt="Загруженное фото" class="w-full h-full object-contain block">
-                        <canvas id="boundingBoxCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                <!-- Dashed upload area -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 cursor-pointer hover:bg-gray-100 transition"
+                     onclick="document.getElementById('fileInput').click()">
+                    <div id="uploadPlaceholder">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <p class="text-gray-600">PNG, JPG, WebP до 10MB</p>
                     </div>
-                    <button   
-                        id="analyzeBtn"
-                        onclick="analyzePhoto()"  
-                        class="w-full bg-green-600 text-white py-3 rounded font-bold hover:bg-green-700 mt-4"  
-                    >
-                        🔍 Анализировать
+                    <img id="originalImage" class="hidden max-w-full max-h-96 mx-auto" alt="Загруженное фото">
+                    <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
+                </div>
+                
+                <!-- Analyze button -->
+                <button id="analyzeBtn" class="hidden w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 disabled:bg-gray-400"
+                        onclick="analyzeImage()">
+                    ✓ Анализировать
+                </button>
+                
+                <p id="processingStatus" class="hidden mt-4 text-center text-blue-600 font-semibold">
+                    ⏳ Обработка... (это может занять 5-10 сек)
+                </p>
+            </div>
+            
+            <!-- ===== RIGHT: RESULTS WITH BBOXES ===== -->
+            <div>
+                <h3 class="text-xl font-bold mb-4">Результат анализа</h3>
+                
+                <div id="resultContainer" class="hidden">
+                    <!-- Canvas with bounding boxes -->
+                    <div class="relative inline-block w-full">
+                        <canvas id="resultCanvas" class="w-full border border-gray-300 rounded-lg"></canvas>
+                    </div>
+                    
+                    <!-- Detection list -->
+                    <div id="detectionsList" class="mt-4 bg-white border rounded-lg p-4 max-h-64 overflow-y-auto">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    
+                    <button onclick="resetDemo()" class="w-full mt-4 bg-gray-600 text-white py-2 rounded font-bold hover:bg-gray-700">
+                        Загрузить другое фото
                     </button>
                 </div>
-            </div>
-
-            <!-- Результаты анализа (справа) -->
-            <div class="border rounded-lg p-8 bg-gray-50">
-                <h3 class="text-lg font-bold mb-4">Результат анализа</h3>
                 
-                <div id="resultsContainer" class="text-gray-500 min-h-32 flex items-center">
-                    Загрузи фото и нажми кнопку анализа
+                <div id="noResultsPlaceholder" class="text-center text-gray-500 py-16">
+                    <p>Здесь будут результаты анализа</p>
                 </div>
             </div>
         </div>
-
-        <!-- Статус API -->
-        <div id="apiStatus" class="mt-8 text-center text-sm text-gray-600"></div>
     </div>
 </section>
 
-<!-- EXAMPLES SECTION -->
-<section id="examples" class="py-16 bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-12 text-center">Примеры использования API</h2>
-        
-        <div class="space-y-8">
-            <!-- cURL -->
-            <div>
-                <h3 class="text-xl font-bold mb-4">cURL</h3>
-                <pre><code class="language-bash">curl -X POST \
-  https://car-damage-api.com/api/detect \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -F "file=@photo.jpg"</code></pre>
-            </div>
-
-            <!-- Python -->
-            <div>
-                <h3 class="text-xl font-bold mb-4">Python</h3>
-                <pre><code class="language-python">import requests
-
-with open('photo.jpg', 'rb') as f:
-    r = requests.post(
-        'https://car-damage-api.com/api/detect',
-        headers={'X-API-Key': 'YOUR_API_KEY'},
-        files={'file': f}
-    )
-    print(r.json())</code></pre>
-            </div>
-
-            <!-- JavaScript -->
-            <div>
-                <h3 class="text-xl font-bold mb-4">JavaScript</h3>
-                <pre><code class="language-javascript">const formData = new FormData();
-formData.append('file', fileInput.files[0]);
-
-fetch('https://car-damage-api.com/api/detect', {
-    method: 'POST',
-    headers: {'X-API-Key': 'YOUR_API_KEY'},
-    body: formData
-})
-.then(r => r.json())
-.then(data => console.log(data))</code></pre>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- PRICING -->
-<section id="pricing" class="py-16 bg-white">
-    <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-12 text-center">Ценообразование</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            <!-- FREE -->
-            <div class="border-2 border-gray-200 rounded-lg p-8">
-                <h3 class="text-2xl font-bold mb-4">Free</h3>
-                <p class="text-4xl font-bold text-blue-600 mb-4">$0</p>
-                <p class="text-gray-600 mb-6">/месяц</p>
-                <ul class="space-y-3 mb-8">
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">✓</span>
-                        <span>$1.00 баланс</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">✓</span>
-                        <span>Web interface</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-gray-400">✗</span>
-                        <span class="text-gray-400">REST API</span>
-                    </li>
+<!-- ==================== PRICING ==================== -->
+<section id="pricing" class="bg-gray-100 py-16">
+    <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center">Тарифы</h2>
+        <div class="grid grid-cols-3 gap-8">
+            <!-- Free Plan -->
+            <div class="bg-white rounded-lg p-8 border-2 border-gray-200">
+                <h3 class="text-2xl font-bold mb-2">Free</h3>
+                <p class="text-4xl font-bold text-blue-600 mb-4">$0<span class="text-sm">/месяц</span></p>
+                <ul class="space-y-3 mb-6 text-gray-700">
+                    <li>✓ Pay-per-use ($0.15 за запрос)</li>
+                    <li>✓ $1.00 стартовый баланс</li>
+                    <li>✓ До 6 анализов</li>
                 </ul>
-                <button   
-                    onclick="selectPlan('free'); openRegisterModal()"  
-                    class="w-full border-2 border-gray-200 py-2 rounded-lg font-bold hover:bg-gray-50"  
-                >
+                <button onclick="openRegisterModal()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">
                     Начать
                 </button>
             </div>
-
-            <!-- STARTER -->
-            <div class="border-2 border-blue-600 rounded-lg p-8 relative bg-blue-50">
-                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">
-                    Популярный
-                </div>
-                <h3 class="text-2xl font-bold mb-4">Starter</h3>
-                <p class="text-4xl font-bold text-blue-600 mb-4">$29</p>
-                <p class="text-gray-600 mb-6">/месяц</p>
-                <ul class="space-y-3 mb-8">
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">✓</span>
-                        <span>1,000 анализов</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">✓</span>
-                        <span>Web + REST API</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">✓</span>
-                        <span>Email support</span>
-                    </li>
+            
+            <!-- Starter Plan -->
+            <div class="bg-white rounded-lg p-8 border-2 border-blue-600">
+                <h3 class="text-2xl font-bold mb-2">Starter</h3>
+                <p class="text-4xl font-bold text-blue-600 mb-4">$29<span class="text-sm">/месяц</span></p>
+                <ul class="space-y-3 mb-6 text-gray-700">
+                    <li>✓ 1,000 анализов в месяц</li>
+                    <li>✓ $0.05 за переполнение</li>
+                    <li>✓ API доступ</li>
                 </ul>
-                <button   
-                    onclick="selectPlan('starter'); openRegisterModal()"  
-                    class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700"  
-                >
+                <button onclick="openRegisterModal()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">
                     Выбрать
                 </button>
             </div>
-
-            <!-- PRO -->
-            <div class="border-2 border-gray-200 rounded-lg p-8">
-                <h3 class="text-2xl font-bold mb-4">Pro</h3>
-                <p class="text-4xl font-bold text-blue-600 mb-4">$99</p>
-                <p class="text-gray-600 mb-6">/месяц</p>
-                <ul class="space-y-3 mb-8">
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">✓</span>
-                        <span>10,000 анализов</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">✓</span>
-                        <span>Web + REST API</span>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <span class="text-green-600">✓</span>
-                        <span>Priority support</span>
-                    </li>
+            
+            <!-- Pro Plan -->
+            <div class="bg-white rounded-lg p-8 border-2 border-gray-200">
+                <h3 class="text-2xl font-bold mb-2">Pro</h3>
+                <p class="text-4xl font-bold text-blue-600 mb-4">$99<span class="text-sm">/месяц</span></p>
+                <ul class="space-y-3 mb-6 text-gray-700">
+                    <li>✓ 10,000 анализов в месяц</li>
+                    <li>✓ $0.02 за переполнение</li>
+                    <li>✓ Приоритетная поддержка</li>
                 </ul>
-                <button   
-                    onclick="selectPlan('pro'); openRegisterModal()"  
-                    class="w-full border-2 border-gray-200 py-2 rounded-lg font-bold hover:bg-gray-50"  
-                >
+                <button onclick="openRegisterModal()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">
                     Выбрать
                 </button>
             </div>
-
         </div>
     </div>
 </section>
 
-<!-- FAQ -->
-<section id="faq" class="py-16 bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-12 text-center">Частые вопросы</h2>
+<!-- ==================== CODE EXAMPLES ==================== -->
+<section id="code" class="max-w-7xl mx-auto px-4 py-16">
+    <h2 class="text-3xl font-bold mb-8">API Примеры</h2>
+    
+    <div class="space-y-8">
+        <!-- cURL -->
+        <div>
+            <h3 class="text-xl font-bold mb-2">cURL</h3>
+            <pre><code class="language-bash">curl -X POST https://car-damage-api-production.up.railway.app/api/detect \
+  -H "X-API-Key: sk_YOUR_API_KEY" \
+  -F "file=@/path/to/image.jpg"</code></pre>
+        </div>
         
-        <div class="space-y-4 max-w-3xl mx-auto">
-            <details class="border rounded-lg p-4">
-                <summary class="font-bold cursor-pointer">Какая точность модели?</summary>
-                <p class="mt-2 text-gray-600">mAP 0.87 на test датасете. Обнаруживает: царапины, вмятины, трещины, разбитое стекло.</p>
-            </details>
+        <!-- Python -->
+        <div>
+            <h3 class="text-xl font-bold mb-2">Python</h3>
+            <pre><code class="language-python">import requests
 
-            <details class="border rounded-lg p-4">
-                <summary class="font-bold cursor-pointer">Как быстро ответ API?</summary>
-                <p class="mt-2 text-gray-600">Средний ответ: 1.2 секунды.</p>
-            </details>
+response = requests.post(
+    "https://car-damage-api-production.up.railway.app/api/detect",
+    headers={"X-API-Key": "sk_YOUR_API_KEY"},
+    files={"file": open("image.jpg", "rb")}
+)
 
-            <details class="border rounded-lg p-4">
-                <summary class="font-bold cursor-pointer">Какие форматы фото поддерживаются?</summary>
-                <p class="mt-2 text-gray-600">JPG, PNG, WebP. Размер до 10MB.</p>
-            </details>
+print(response.json())</code></pre>
+        </div>
+        
+        <!-- JavaScript -->
+        <div>
+            <h3 class="text-xl font-bold mb-2">JavaScript</h3>
+            <pre><code class="language-javascript">const formData = new FormData();
+formData.append("file", fileInput.files[0]);
 
-            <details class="border rounded-lg p-4">
-                <summary class="font-bold cursor-pointer">Безопасность данных?</summary>
-                <p class="mt-2 text-gray-600">Все загруженные фото удаляются сразу после анализа. Данные не хранятся.</p>
-            </details>
+const response = await fetch(
+    "https://car-damage-api-production.up.railway.app/api/detect",
+    {
+        method: "POST",
+        headers: {"X-API-Key": "sk_YOUR_API_KEY"},
+        body: formData
+    }
+);
+
+const data = await response.json();
+console.log(data);</code></pre>
         </div>
     </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="bg-gray-800 text-white py-8">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-        <p>© 2025 KastikCars. Все права защищены.</p>
-        <p class="text-sm text-gray-400 mt-2">support@kastikcars.com</p>
+<!-- ==================== FAQ ==================== -->
+<section id="faq" class="bg-gray-100 py-16">
+    <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center">Часто задаваемые вопросы</h2>
+        
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg p-6">
+                <h3 class="font-bold text-lg mb-2">Как получить API key?</h3>
+                <p class="text-gray-700">После регистрации API key будет отправлен на ваш email. Его можно использовать для всех API запросов.</p>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6">
+                <h3 class="font-bold text-lg mb-2">Какие форматы изображений поддерживаются?</h3>
+                <p class="text-gray-700">PNG, JPG, WebP. Максимальный размер файла 10MB.</p>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6">
+                <h3 class="font-bold text-lg mb-2">Как изменить тариф?</h3>
+                <p class="text-gray-700">Вы можете изменить план в любое время. Изменение вступит в силу со следующего дня.</p>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6">
+                <h3 class="font-bold text-lg mb-2">Есть ли гарантия возврата денег?</h3>
+                <p class="text-gray-700">Да, 30 дней на любой платный план. Свяжитесь с поддержкой support@kastikcars.com</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="bg-gray-900 text-white py-8">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <p>&copy; 2024 KastikCars. Все права защищены.</p>
     </div>
 </footer>
 
 <script>
-hljs.highlightAll();
-
-// ==================== МОДАЛЬ РЕГИСТРАЦИИ ====================
-
-let selectedPlan = 'free';
-
+// ==================== REGISTRATION ==================== 
 function openRegisterModal() {
-    document.getElementById('registerModal').classList.remove('modal-hidden');
-    document.getElementById('registerModal').classList.add('modal-visible');
+    document.getElementById('registerModal').classList.remove('hidden');
 }
 
 function closeRegisterModal() {
-    document.getElementById('registerModal').classList.add('modal-hidden');
-    document.getElementById('registerModal').classList.remove('modal-visible');
-    document.getElementById('registerError').textContent = '';
+    document.getElementById('registerModal').classList.add('hidden');
 }
-
-function selectPlan(plan) {
-    selectedPlan = plan;
-    const planNames = {
-        'free': 'Free',
-        'starter': 'Starter',
-        'pro': 'Pro'
-    };
-    document.getElementById('planName').textContent = planNames[plan];
-}
-
-// ==================== РЕГИСТРАЦИЯ ====================
 
 async function registerUser() {
-    const email = document.getElementById('emailInput').value.trim();
-    const errorDiv = document.getElementById('registerError');
-    errorDiv.textContent = '';
-
+    const email = document.getElementById('registerEmail').value;
+    const plan = document.querySelector('input[name="plan"]:checked').value;
+    
     if (!email) {
-        errorDiv.textContent = '❌ Введи email';
+        alert('Введите email');
         return;
     }
-
-    if (!email.includes('@')) {
-        errorDiv.textContent = '❌ Неправильный email';
-        return;
-    }
-
+    
     try {
-        const response = await fetch('/api/register?email=' + encodeURIComponent(email), {
-            method: 'POST'
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({email, plan})
         });
-
-        const data = await response.json();
-
+        
         if (!response.ok) {
-            errorDiv.textContent = '❌ ' + data.detail;
+            const error = await response.json();
+            alert(error.detail);
             return;
         }
-
+        
+        const data = await response.json();
         localStorage.setItem('apiKey', data.api_key);
-        localStorage.setItem('userEmail', email);
-        localStorage.setItem('userPlan', selectedPlan);
-
+        localStorage.setItem('userPlan', data.plan);
+        
         closeRegisterModal();
         showDemo();
-        document.getElementById('emailInput').value = '';
-
     } catch (error) {
-        errorDiv.textContent = '❌ Ошибка: ' + error.message;
+        console.error('Registration error:', error);
+        alert('Ошибка регистрации');
     }
 }
 
-function logout() {
-    localStorage.removeItem('apiKey');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userPlan');
-    location.reload();
-}
-
-// ==================== ДЕМО ====================
-
+// ==================== DEMO ==================== 
 function showDemo() {
-    document.getElementById('demo').classList.remove('hidden');
-    document.getElementById('registerBtn').classList.add('hidden');
-    document.getElementById('userInfo').classList.remove('hidden');
-    
-    const email = localStorage.getItem('userEmail');
-    document.getElementById('userName').textContent = email.split('@')[0];
-    document.getElementById('userEmail').textContent = email;
-    
-    const apiKey = localStorage.getItem('apiKey');
-    document.getElementById('apiStatus').innerHTML = `
-        ✅ Вы вошли как: <strong>${email}</strong><br>
-        API Key: <code>${apiKey.substring(0, 10)}...</code>
-    `;
+    document.getElementById('beforeLoginDemo').classList.add('hidden');
+    document.getElementById('afterLoginDemo').classList.remove('hidden');
 }
 
-function checkLoggedIn() {
+function resetDemo() {
+    document.getElementById('originalImage').classList.add('hidden');
+    document.getElementById('analyzeBtn').classList.add('hidden');
+    document.getElementById('uploadPlaceholder').classList.remove('hidden');
+    document.getElementById('resultContainer').classList.add('hidden');
+    document.getElementById('noResultsPlaceholder').classList.remove('hidden');
+    document.getElementById('processingStatus').classList.add('hidden');
+    document.getElementById('fileInput').value = '';
+}
+
+function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = document.getElementById('originalImage');
+        img.src = e.target.result;
+        img.classList.remove('hidden');
+        
+        document.getElementById('uploadPlaceholder').classList.add('hidden');
+        document.getElementById('analyzeBtn').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+async function analyzeImage() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    const apiKey = localStorage.getItem('apiKey');
+    
+    if (!file || !apiKey) {
+        alert('Ошибка: файл или API key не найден');
+        return;
+    }
+    
+    document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('processingStatus').classList.remove('hidden');
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/detect', {
+            method: 'POST',
+            headers: {'X-API-Key': apiKey},
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            alert(`Ошибка: ${error.detail}`);
+            throw new Error(error.detail);
+        }
+        
+        const data = await response.json();
+        displayResults(data);
+    } catch (error) {
+        console.error('Detection error:', error);
+        alert('Ошибка при анализе изображения');
+    } finally {
+        document.getElementById('analyzeBtn').disabled = false;
+        document.getElementById('processingStatus').classList.add('hidden');
+    }
+}
+
+function displayResults(data) {
+    const originalImg = document.getElementById('originalImage');
+    const canvas = document.getElementById('resultCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const img = new Image();
+    img.onload = () => {
+        // Set canvas size to match image
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw original image
+        ctx.drawImage(img, 0, 0);
+        
+        // Draw bounding boxes
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'];
+        
+        data.detections.forEach((detection, idx) => {
+            const color = colors[idx % colors.length];
+            const {x1, y1, x2, y2} = detection.bbox;
+            const w = x2 - x1;
+            const h = y2 - y1;
+            
+            // Draw rectangle
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x1, y1, w, h);
+            
+            // Draw label background
+            const label = `${detection.class} ${(detection.confidence * 100).toFixed(1)}%`;
+            ctx.font = 'bold 14px Arial';
+            const textWidth = ctx.measureText(label).width;
+            const textHeight = 20;
+            
+            ctx.fillStyle = color;
+            ctx.fillRect(x1, y1 - textHeight - 4, textWidth + 8, textHeight + 4);
+            
+            // Draw label text
+            ctx.fillStyle = '#FFF';
+            ctx.fillText(label, x1 + 4, y1 - 6);
+        });
+        
+        // Show results
+        document.getElementById('resultContainer').classList.remove('hidden');
+        document.getElementById('noResultsPlaceholder').classList.add('hidden');
+        
+        // Update detections list
+        const list = document.getElementById('detectionsList');
+        list.innerHTML = `<div class="font-bold text-lg mb-3">🎯 Найдено ${data.detections.length} повреждений:</div>`;
+        
+        data.detections.forEach((detection, idx) => {
+            const item = document.createElement('div');
+            item.className = 'py-2 border-b last:border-b-0';
+            item.innerHTML = `
+                <div class="flex justify-between">
+                    <span class="font-semibold">${idx + 1}. ${detection.class}</span>
+                    <span class="text-blue-600 font-bold">${(detection.confidence * 100).toFixed(1)}%</span>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    };
+    
+    img.src = document.getElementById('originalImage').src;
+}
+
+// Check if user is logged in
+window.addEventListener('DOMContentLoaded', () => {
     const apiKey = localStorage.getItem('apiKey');
     if (apiKey) {
         showDemo();
     }
-}
-
-// ==================== ЗАГРУЗКА ФОТО ====================
-
-let currentFile = null;
-
-document.getElementById('photoInput')?.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const apiKey = localStorage.getItem('apiKey');
-    if (!apiKey) {
-        alert('Сначала зарегистрируйся!');
-        return;
-    }
-
-    currentFile = file;
-
-    // Показываем загруженное изображение
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        document.getElementById('uploadedImage').src = event.target.result;
-        document.getElementById('imageContainer').classList.remove('hidden');
-        document.getElementById('resultsContainer').innerHTML = 'Нажми кнопку "Анализировать" для начала';
-        
-        // Очищаем canvas
-        const canvas = document.getElementById('boundingBoxCanvas');
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    };
-    reader.readAsDataURL(file);
+    
+    // Syntax highlighting for code examples
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightElement(block);
+    });
 });
-
-async function analyzePhoto() {
-    if (!currentFile) return;
-
-    const apiKey = localStorage.getItem('apiKey');
-    const formData = new FormData();
-    formData.append('file', currentFile);
-
-    const resultsDiv = document.getElementById('resultsContainer');
-    const analyzeBtn = document.getElementById('analyzeBtn');
-    
-    analyzeBtn.disabled = true;
-    analyzeBtn.textContent = '⏳ Анализирую...';
-    resultsDiv.innerHTML = '<p class="text-gray-500">⏳ Обработка фото...</p>';
-
-    try {
-        const response = await fetch('/api/detect', {
-            method: 'POST',
-            headers: {
-                'X-API-Key': apiKey
-            },
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            resultsDiv.innerHTML = `<p class="text-red-600">❌ ${data.detail}</p>`;
-            analyzeBtn.disabled = false;
-            analyzeBtn.textContent = '🔍 Анализировать';
-            return;
-        }
-
-        // Рисуем bounding boxes
-        if (data.detections && data.detections.length > 0) {
-            drawBoundingBoxes(data.detections);
-        }
-
-        // Показываем результаты
-        if (data.detections.length === 0) {
-            resultsDiv.innerHTML = '<p class="text-green-600">✅ Повреждений не найдено</p>';
-        } else {
-            let html = `<p class="text-orange-600 mb-4">⚠️ Найдено ${data.count} повреждений:</p>`;
-            html += '<ul class="text-left space-y-2">';
-            
-            data.detections.forEach((det, i) => {
-                html += `
-                    <li class="bg-white p-2 rounded border-l-4 border-orange-400">
-                        <strong>${i + 1}. ${det.class}</strong><br>
-                        Уверенность: ${(det.confidence * 100).toFixed(1)}%
-                    </li>
-                `;
-            });
-            
-            html += '</ul>';
-            resultsDiv.innerHTML = html;
-        }
-
-    } catch (error) {
-        resultsDiv.innerHTML = `<p class="text-red-600">❌ Ошибка: ${error.message}</p>`;
-    } finally {
-        analyzeBtn.disabled = false;
-        analyzeBtn.textContent = '🔍 Анализировать';
-    }
-}
-
-// ==================== РИСОВАНИЕ BOUNDING BOXES ====================
-
-function drawBoundingBoxes(detections) {
-    const canvas = document.getElementById('boundingBoxCanvas');
-    const img = document.getElementById('uploadedImage');
-    const container = img.parentElement;
-    
-    function drawBoxes() {
-        // Устанавливаем размер canvas
-        canvas.width = container.offsetWidth;
-        canvas.height = container.offsetHeight;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Вычисляем масштаб
-        const displayWidth = img.offsetWidth;
-        const displayHeight = img.offsetHeight;
-        const naturalWidth = img.naturalWidth;
-        const naturalHeight = img.naturalHeight;
-
-        const scaleX = displayWidth / naturalWidth;
-        const scaleY = displayHeight / naturalHeight;
-
-        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
-
-        detections.forEach((det, i) => {
-            // Координаты из API (оригинальные размеры)
-            const x1 = det.bbox.x1 * scaleX;
-            const y1 = det.bbox.y1 * scaleY;
-            const x2 = det.bbox.x2 * scaleX;
-            const y2 = det.bbox.y2 * scaleY;
-            const w = x2 - x1;
-            const h = y2 - y1;
-
-            const color = colors[i % colors.length];
-            const confidence = Math.round(det.confidence * 100);
-            const label = det.class + ' ' + confidence + '%';
-
-            // Рисуем прямоугольник
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 3;
-            ctx.strokeRect(x1, y1, w, h);
-
-            // Рисуем фон для текста
-            ctx.font = 'bold 13px Arial';
-            const textMetrics = ctx.measureText(label);
-            const textWidth = textMetrics.width + 8;
-            const textHeight = 22;
-            
-            const textY = Math.max(textHeight, y1);
-            ctx.fillStyle = color;
-            ctx.fillRect(x1, textY - textHeight, textWidth, textHeight);
-
-            // Рисуем текст
-            ctx.fillStyle = 'white';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(label, x1 + 4, textY - textHeight / 2);
-        });
-    }
-
-    // Ждём загрузки изображения
-    if (!img.complete) {
-        img.onload = drawBoxes;
-    } else {
-        drawBoxes();
-    }
-}
-
-// Проверяем при загрузке страницы
-window.addEventListener('load', checkLoggedIn);
-
 </script>
 
 </body>
