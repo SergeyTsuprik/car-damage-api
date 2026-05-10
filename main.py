@@ -98,6 +98,146 @@ if STATIC_DIR.exists():
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ==================== CLASS MAPPING & FILTERING ====================
+
+# Маппинг на упрощённые английские названия
+CLASS_NAMES_EN = {
+    "bumper_front": "bumper",
+    "bumper_rear": "bumper",
+    "bumper_left": "bumper",
+    "bumper_right": "bumper",
+    "door_front_left": "door",
+    "door_front_right": "door",
+    "door_rear_left": "door",
+    "door_rear_right": "door",
+    "door_left": "door",
+    "door_right": "door",
+    "headlight_left": "lamp",
+    "headlight_right": "lamp",
+    "taillight_left": "taillight",
+    "taillight_right": "taillight",
+    "mirror_left": "mirror",
+    "mirror_right": "mirror",
+    "wheel_left_front": "wheel",
+    "wheel_right_front": "wheel",
+    "wheel_left_rear": "wheel",
+    "wheel_right_rear": "wheel",
+    "wheel_left": "wheel",
+    "wheel_right": "wheel",
+    "window_left_front": "window",
+    "window_right_front": "window",
+    "window_left_rear": "window",
+    "window_right_rear": "window",
+    "window_left": "window",
+    "window_right": "window",
+    "fender_left": "fender",
+    "fender_right": "fender",
+    "hood": "hood",
+    "roof": "roof",
+    "trunk": "trunk",
+    "windscreen": "windscreen",
+    "windscreen_front": "windscreen",
+    "windscreen_rear": "windscreen",
+}
+
+ALLOWED_DUPLICATES = {
+    "wheel": 4,
+    "door": 4,
+    "window": 4,
+    "lamp": 2,
+    "taillight": 2,
+    "mirror": 2,
+}
+
+def map_class_name(original_class: str) -> str:
+    """Маппит оригинальный класс на упрощённый"""
+    return CLASS_NAMES_EN.get(original_class, original_class)
+
+def correct_class_by_bbox(detections: list, img_width: int) -> list:
+    """Исправляет left/right классы на основе X координат bbox"""
+    center_x = img_width / 2
+    
+    swap_map = {
+        "headlight_left": "headlight_right",
+        "headlight_right": "headlight_left",
+        "taillight_left": "taillight_right",
+        "taillight_right": "taillight_left",
+        "mirror_left": "mirror_right",
+        "mirror_right": "mirror_left",
+        "door_left": "door_right",
+        "door_right": "door_left",
+        "door_front_left": "door_front_right",
+        "door_front_right": "door_front_left",
+        "door_rear_left": "door_rear_right",
+        "door_rear_right": "door_rear_left",
+        "window_left_front": "window_right_front",
+        "window_right_front": "window_left_front",
+        "window_left_rear": "window_right_rear",
+        "window_right_rear": "window_left_rear",
+        "wheel_left_front": "wheel_right_front",
+        "wheel_right_front": "wheel_left_front",
+        "wheel_left_rear": "wheel_right_rear",
+        "wheel_right_rear": "wheel_left_rear",
+    }
+    
+    for det in detections:
+        class_name = det["class_en"]
+        center_bbox_x = (det["bbox"]["x1"] + det["bbox"]["x2"]) / 2
+        
+        if class_name in swap_map:
+            if "_left" in class_name and center_bbox_x < center_x:
+                det["class_en"] = swap_map[class_name]
+            elif "_right" in class_name and center_bbox_x >= center_x:
+                det["class_en"] = swap_map[class_name]
+    
+    return detections
+
+def remove_conflicting_detections(detections: list) -> list:
+    """Удаляет конфликтующие детекции (bumper_front vs bumper_rear)"""
+    conflict_pairs = [
+        ("bumper_front", "bumper_rear"),
+        ("windscreen_front", "windscreen_rear"),
+    ]
+    
+    for class1, class2 in conflict_pairs:
+        det1 = next((d for d in detections if d["class_en"] == class1), None)
+        det2 = next((d for d in detections if d["class_en"] == class2), None)
+        
+        if det1 and det2:
+            if det1["confidence"] >= det2["confidence"]:
+                detections = [d for d in detections if d["class_en"] != class2]
+            else:
+                detections = [d for d in detections if d["class_en"] != class1]
+    
+    return detections
+
+def filter_detections(detections: list) -> list:
+    """Удаляет дубликаты и применяет маппинг классов"""
+    detections = remove_conflicting_detections(detections)
+    
+    class_count = {}
+    filtered = []
+    
+    for det in detections:
+        mapped_class = map_class_name(det["class_en"])
+        
+        if mapped_class in ALLOWED_DUPLICATES:
+            max_count = ALLOWED_DUPLICATES[mapped_class]
+            current_count = class_count.get(mapped_class, 0)
+            if current_count < max_count:
+                filtered.append(det)
+                class_count[mapped_class] = current_count + 1
+        else:
+            if mapped_class not in class_count:
+                filtered.append(det)
+                class_count[mapped_class] = 1
+    
+    # Заменяем class_en на mapped names
+    for det in filtered:
+        det["class_en"] = map_class_name(det["class_en"])
+    
+    return filtered
+
 # ==================== PLAN CONFIGURATION ====================
 PLAN_PRICES = {
     "free": {
@@ -382,6 +522,7 @@ async def detect_damage(
         contents = await file.read()
         nparr = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        img_height, img_width = img.shape[:2]
         
         # Model inference with confidence threshold
         results = model(img, conf=0.13)
@@ -390,16 +531,25 @@ async def detect_damage(
         for result in results:
             for box in result.boxes:
                 detections.append({
-                    "class": result.names[int(box.cls)],
                     "class_en": result.names[int(box.cls)],
-                    "confidence": float(box.conf),
+                    "confidence": round(float(box.conf), 3),
                     "bbox": {
-                        "x1": float(box.xyxy[0][0]),
-                        "y1": float(box.xyxy[0][1]),
-                        "x2": float(box.xyxy[0][2]),
-                        "y2": float(box.xyxy[0][3])
+                        "x1": int(float(box.xyxy[0][0])),
+                        "y1": int(float(box.xyxy[0][1])),
+                        "x2": int(float(box.xyxy[0][2])),
+                        "y2": int(float(box.xyxy[0][3]))
                     }
                 })
+        
+        logger.info(f"Raw detections: {len(detections)}")
+        # Применяем фильтрацию и маппинг
+        detections = correct_class_by_bbox(detections, img_width)
+        detections = filter_detections(detections)
+        logger.info(f"After filtering: {len(detections)} final detections")
+        
+        # Переименовываем class_en в class для ответа
+        for det in detections:
+            det["class"] = det.pop("class_en")
     
     except Exception as e:
         logger.error(f"Detection error: {e}")

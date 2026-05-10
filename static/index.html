@@ -1221,19 +1221,28 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                     const className = result.class || 'unknown';
                     const color = damageColors[className] || '#FF00FF';
 
+                    // Draw bounding box
                     ctx.strokeStyle = color;
                     ctx.lineWidth = 2;
                     ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
 
+                    // Draw label with background
                     const label = className.charAt(0).toUpperCase() + className.slice(1).toLowerCase();
-                    ctx.font = 'bold 18px Arial';
-                    const textWidth = ctx.measureText(label).width;
+                    ctx.font = 'bold 16px Arial';
+                    const textMetrics = ctx.measureText(label);
+                    const textWidth = textMetrics.width + 10;
+                    const textHeight = 25;
+                    const labelX = x1;
+                    const labelY = Math.max(y1 - textHeight - 5, 20);
                     
+                    // Background rectangle for label
                     ctx.fillStyle = color;
-                    ctx.fillRect(x1, y1 - 35, textWidth + 12, 32);
-
+                    ctx.fillRect(labelX, labelY, textWidth, textHeight);
+                    
+                    // White text
                     ctx.fillStyle = '#FFFFFF';
-                    ctx.fillText(label, x1 + 6, y1 - 12);
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(label, labelX + 5, labelY + textHeight / 2);
 
                     damages[className] = (damages[className] || 0) + 1;
                 });
