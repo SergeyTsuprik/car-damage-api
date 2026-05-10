@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends
+from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -199,6 +199,7 @@ async def models_info():
 @app.post("/api/detect")
 @limiter.limit("100/minute")
 async def detect_damage(
+    request: Request,
     file: UploadFile = File(...),
     api_key: str = Header(..., alias="X-API-Key"),
     db: Session = Depends(get_db)
