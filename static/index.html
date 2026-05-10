@@ -1204,6 +1204,7 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                 }
 
                 currentUser = await response.json();
+                console.log('✅ User data loaded:', currentUser);
                 updateUI();
             } catch (error) {
                 console.error('Error loading user data:', error);
@@ -1217,7 +1218,16 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                 document.getElementById('apiKeyBtn').style.display = 'block';
                 document.getElementById('userSection').style.display = 'block';
                 document.getElementById('userEmail').textContent = currentUser.email;
-                document.getElementById('requestsRemaining').textContent = currentUser.requests_remaining || 0;
+                
+                // Расчитываем requests_remaining если его нет в ответе
+                let remaining = currentUser.requests_remaining;
+                if (remaining === undefined) {
+                    remaining = currentUser.requests_limit - currentUser.requests_used;
+                    console.log(`📊 Расчитано вручную: ${remaining} = ${currentUser.requests_limit} - ${currentUser.requests_used}`);
+                }
+                
+                document.getElementById('requestsRemaining').textContent = remaining;
+                console.log(`🔢 Счётчик обновлён в UI: ${remaining}`);
                 document.getElementById('demoSection').classList.add('visible');
             } else {
                 document.getElementById('loginBtn').style.display = 'block';
