@@ -337,7 +337,7 @@ async def register(email: str, db: Session = Depends(get_db)):
         api_key=api_key,
         plan="free",
         limit=0,  # pay-per-use
-        balance=0,  # начальный баланс = 0 (позже можно дать bonus)
+        balance=1.00,  # стартовый баланс $1.00 для тестирования (~6 анализов)
         subscription_active=False,
         reset_date=datetime.utcnow() + timedelta(days=30),
         created_at=datetime.utcnow()

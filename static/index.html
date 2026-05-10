@@ -4,844 +4,498 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KastikCars - Детекция повреждений автомобилей</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f8f9fa;
-            color: #333;
-        }
-
-        header {
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 1rem 2rem;
-        }
-
-        nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .logo-section {
-            background: white;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .logo-section img {
-            height: 300px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-            margin-left: auto;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #333;
-            cursor: pointer;
-            transition: color 0.3s;
-            font-weight: 500;
-        }
-
-        .nav-links a:hover {
-            color: #5b7cfa;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        section {
-            padding: 4rem 0;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .btn {
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: white;
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid white;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .demo-section {
-            background: white;
-            padding: 3rem;
-            border-radius: 12px;
-            margin: 3rem 0;
-        }
-
-        .demo-section h2 {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .upload-area {
-            border: 2px dashed #5b7cfa;
-            border-radius: 16px;
-            padding: 3rem;
-            text-align: center;
-            cursor: pointer;
-            background: #f0f4ff;
-            transition: all 0.3s;
-            margin-bottom: 2rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 400px;
-            width: 100%;
-        }
-
-        .upload-area:hover {
-            background: #e8ecff;
-            border-color: #4c6ef5;
-        }
-
-        .upload-area.dragover {
-            background: #dde4ff;
-            border-color: #4c6ef5;
-        }
-
-        .upload-area input {
-            display: none;
-        }
-
-        .upload-area-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            pointer-events: none;
-        }
-
-        .upload-icon {
-            font-size: 3rem;
-            margin: 0;
-        }
-
-        .upload-area h3 {
-            margin: 0;
-            color: #333;
-        }
-
-        .upload-area p {
-            color: #999;
-            font-size: 0.9rem;
-            margin: 0;
-        }
-
-        .upload-area.has-image {
-            background: transparent;
-            border-color: #5b7cfa;
-            padding: 1rem;
-            min-height: auto;
-            height: auto;
-            width: 100%;
-        }
-
-        .upload-area.has-image:hover {
-            border-color: #4c6ef5;
-        }
-
-        .upload-area.has-image .upload-area-content {
-            display: none;
-        }
-
-        #imagePreview {
-            max-width: 100%;
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .upload-area.has-image #imagePreview {
-            display: block;
-        }
-
-        #canvasContainer {
-            position: relative;
-            display: none;
-            margin: 0 auto 2rem;
-            width: fit-content;
-        }
-
-        #resultCanvas {
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-            display: block;
-            max-width: 100%;
-            height: auto;
-        }
-
-        .analyze-btn {
-            background: #5b7cfa;
-            color: white;
-            padding: 0.75rem 3rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            display: none;
-            margin: 1rem auto;
-            transition: all 0.3s;
-        }
-
-        .analyze-btn:hover {
-            background: #4c6ef5;
-            transform: translateY(-2px);
-        }
-
-        .analyze-btn:disabled {
-            background: #999;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .legend {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-top: 2rem;
-            display: none;
-        }
-
-        .legend h3 {
-            margin-bottom: 1rem;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-        }
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .pricing-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .pricing-card.popular {
-            border-color: #5b7cfa;
-            transform: scale(1.05);
-        }
-
-        .pricing-card h3 {
-            margin-bottom: 0.5rem;
-        }
-
-        .price {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #5b7cfa;
-            margin: 1rem 0;
-        }
-
-        .price-period {
-            color: #999;
-        }
-
-        .features {
-            list-style: none;
-            margin: 1.5rem 0;
-            text-align: left;
-        }
-
-        .features li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .features li:before {
-            content: "✓ ";
-            color: #5b7cfa;
-            font-weight: 700;
-            margin-right: 0.5rem;
-        }
-
-        .features li.disabled:before {
-            content: "✗ ";
-            color: #999;
-        }
-
-        .features li.disabled {
-            color: #999;
-        }
-
-        .faq {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .faq-item {
-            background: white;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            overflow: hidden;
-        }
-
-        .faq-question {
-            padding: 1.5rem;
-            cursor: pointer;
-            background: white;
-            border: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-        }
-
-        .faq-question:hover {
-            background: #f8f9fa;
-        }
-
-        .faq-answer {
-            padding: 1.5rem;
-            background: #f8f9fa;
-            display: none;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .faq-item.active .faq-answer {
-            display: block;
-        }
-
-        .testimonials {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .testimonial {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            border-left: 4px solid #5b7cfa;
-        }
-
-        .testimonial h3 {
-            margin-bottom: 0.5rem;
-        }
-
-        .testimonial p {
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .code-examples {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .code-example {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 1.5rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 0;
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .keyword { color: #569cd6; }
-        .string { color: #ce9178; }
-        .function { color: #dcdcaa; }
-        .comment { color: #6a9955; }
-        .number { color: #b5cea8; }
-
-        footer {
-            background: white;
-            color: #333;
-            padding: 3rem 2rem;
-            text-align: center;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        footer p {
-            margin-bottom: 0.5rem;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 1rem 0;
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #5b7cfa;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            display: none;
-        }
+        .modal-hidden { display: none; }
+        .modal-visible { display: flex; }
     </style>
 </head>
-<body>
-    <header>
-        <nav>
-            <ul class="nav-links">
-                <li><a onclick="scrollToSection('demo')">Demo</a></li>
-                <li><a onclick="scrollToSection('pricing')">Pricing</a></li>
-                <li><a onclick="scrollToSection('faq')">FAQ</a></li>
-            </ul>
+<body class="bg-gray-50">
+
+<!-- РЕГИСТРАЦИОННАЯ МОДАЛЬ -->
+<div id="registerModal" class="modal-hidden fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 w-96 shadow-lg">
+        <h2 class="text-2xl font-bold mb-6">Начни бесплатно</h2>
+        
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Email</label>
+            <input   
+                id="emailInput"   
+                type="email"   
+                placeholder="your@email.com"  
+                class="w-full border border-gray-300 rounded px-3 py-2"  
+            >
+        </div>
+
+        <div id="selectedPlan" class="mb-4 p-3 bg-blue-50 rounded text-sm">
+            Выбранный план: <strong id="planName">Free</strong>
+        </div>
+
+        <button   
+            onclick="registerUser()"  
+            class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 mb-2"  
+        >
+            Создать аккаунт
+        </button>
+
+        <button   
+            onclick="closeRegisterModal()"  
+            class="w-full border border-gray-300 py-2 rounded font-bold hover:bg-gray-50"  
+        >
+            Отмена
+        </button>
+
+        <div id="registerError" class="mt-4 text-red-600 text-sm"></div>
+    </div>
+</div>
+
+<!-- HEADER -->
+<header class="bg-white border-b">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-blue-600">🚗 KastikCars</h1>
+        <nav class="space-x-6">
+            <a href="#pricing" class="hover:text-blue-600">Pricing</a>
+            <a href="#examples" class="hover:text-blue-600">Примеры</a>
+            <a href="#faq" class="hover:text-blue-600">FAQ</a>
         </nav>
-    </header>
-
-    <section class="logo-section">
-        <img src="/static/logo.png" alt="KastikCars">
-    </section>
-
-    <section class="hero">
-        <h1>Оценить повреждение авто за 3 секунды</h1>
-        <p style="font-size: 1rem; opacity: 0.8;">Вместо часа работы эксперта — одна фотография. REST API для автоматической детекции повреждений.</p>
-        <div class="hero-buttons">
-            <button class="btn btn-primary" onclick="scrollToSection('demo')">Попробовать бесплатно</button>
-            <button class="btn btn-secondary" onclick="alert('Документация API')">Документация</button>
+        <div id="authSection">
+            <button   
+                onclick="selectPlan('free'); openRegisterModal()"  
+                class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700"  
+            >
+                Зарегистрироваться
+            </button>
         </div>
-    </section>
+        <div id="userSection" class="hidden space-x-4">
+            <span id="userEmail" class="text-gray-600"></span>
+            <button onclick="logout()" class="text-red-600 font-bold hover:underline">Выход</button>
+        </div>
+    </div>
+</header>
 
-    <section id="demo" class="container">
-        <div class="demo-section">
-            <h2>Попробовать прямо сейчас</h2>
-            <div class="upload-area" id="uploadArea">
-                <input type="file" id="fileInput" accept="image/*">
-                <div class="upload-area-content">
-                    <div class="upload-icon">📸</div>
-                    <h3>Нажми или загрузи фото авто</h3>
-                    <p>PNG, JPG, WebP до 10MB</p>
+<!-- LOGO SECTION -->
+<section class="bg-white border-b py-8">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+        <img src="/static/logo.png" alt="KastikCars Logo" class="h-16 mx-auto">
+    </div>
+</section>
+
+<!-- HERO -->
+<section class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+        <h2 class="text-4xl font-bold mb-4">Оценить повреждение авто за 3 секунды</h2>
+        <p class="text-xl mb-8">Вместо часа работы эксперта — одна фотография. REST API для автоматической детекции повреждений.</p>
+        <button   
+            onclick="selectPlan('free'); openRegisterModal()"  
+            class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-100"  
+        >
+            Попробовать бесплатно
+        </button>
+    </div>
+</section>
+
+<!-- DEMO SECTION (только после регистрации) -->
+<section id="demoSection" class="hidden py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Загрузка фото -->
+            <div class="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center bg-blue-50">
+                <input   
+                    id="photoInput"   
+                    type="file"   
+                    accept="image/*"  
+                    class="hidden"  
+                >
+                <button   
+                    onclick="document.getElementById('photoInput').click()"  
+                    class="bg-blue-600 text-white px-6 py-3 rounded font-bold hover:bg-blue-700"  
+                >
+                    📸 Загрузить фото
+                </button>
+                <p class="text-gray-600 text-sm mt-4">PNG, JPG, WebP до 10MB</p>
+            </div>
+
+            <!-- Результаты -->
+            <div class="border rounded-lg p-8 bg-gray-50">
+                <h3 class="text-lg font-bold mb-4">Найденные повреждения</h3>
+                <div id="resultsContainer" class="text-gray-500">
+                    Загрузи фото для анализа
                 </div>
-                <img id="imagePreview" alt="Preview">
-            </div>
-            <button class="analyze-btn" id="analyzeBtn">Анализировать</button>
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Анализирую фото...</p>
-            </div>
-            <div class="error-message" id="errorMessage"></div>
-            <div id="canvasContainer">
-                <canvas id="resultCanvas"></canvas>
-            </div>
-            <div class="legend" id="legend">
-                <h3>Найденные повреждения:</h3>
-                <div id="legendContent"></div>
             </div>
         </div>
-    </section>
 
-    <section id="pricing" class="container">
-        <h2 style="text-align: center; margin-bottom: 2rem;">Ценообразование</h2>
-        <div class="pricing-grid">
-            <div class="pricing-card">
-                <h3>Free</h3>
-                <div class="price">$0<span class="price-period">/месяц</span></div>
-                <ul class="features">
-                    <li>10 анализов/месяц</li>
-                    <li>Web interface</li>
-                    <li class="disabled">API доступ</li>
+        <!-- Статус API -->
+        <div id="apiStatus" class="mt-8 text-center text-sm text-gray-600"></div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center">Ценообразование</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- FREE -->
+            <div class="border-2 border-gray-200 rounded-lg p-8">
+                <h3 class="text-2xl font-bold mb-4">Free</h3>
+                <p class="text-4xl font-bold text-blue-600 mb-4">$0</p>
+                <p class="text-gray-600 mb-6">/месяц</p>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">✓</span>
+                        <span>10 анализов/месяц</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">✓</span>
+                        <span>Web interface</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="text-gray-400">✗</span>
+                        <span class="text-gray-400">REST API</span>
+                    </li>
                 </ul>
-                <button class="btn btn-primary">Начать</button>
+                <button   
+                    onclick="selectPlan('free'); openRegisterModal()"  
+                    class="w-full border-2 border-gray-200 py-2 rounded-lg font-bold hover:bg-gray-50"  
+                >
+                    Начать
+                </button>
             </div>
-            <div class="pricing-card popular">
-                <div style="color: #5b7cfa; font-size: 0.85rem; margin-bottom: 1rem;">Популярный</div>
-                <h3>Starter</h3>
-                <div class="price">$29<span class="price-period">/месяц</span></div>
-                <ul class="features">
-                    <li>1,000 анализов</li>
-                    <li>Web + REST API</li>
-                    <li>Email support</li>
+
+            <!-- STARTER -->
+            <div class="border-2 border-blue-600 rounded-lg p-8 relative bg-blue-50">
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+                    Популярный
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Starter</h3>
+                <p class="text-4xl font-bold text-blue-600 mb-4">$29</p>
+                <p class="text-gray-600 mb-6">/месяц</p>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">✓</span>
+                        <span>1,000 анализов</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">✓</span>
+                        <span>Web + REST API</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">✓</span>
+                        <span>Email support</span>
+                    </li>
                 </ul>
-                <button class="btn btn-primary">Выбрать</button>
+                <button   
+                    onclick="selectPlan('starter'); openRegisterModal()"  
+                    class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700"  
+                >
+                    Выбрать
+                </button>
             </div>
-            <div class="pricing-card">
-                <h3>Pro</h3>
-                <div class="price">$99<span class="price-period">/месяц</span></div>
-                <ul class="features">
-                    <li>10,000 анализов</li>
-                    <li>Web + REST API</li>
-                    <li>Priority support</li>
+
+            <!-- PRO -->
+            <div class="border-2 border-gray-200 rounded-lg p-8">
+                <h3 class="text-2xl font-bold mb-4">Pro</h3>
+                <p class="text-4xl font-bold text-blue-600 mb-4">$99</p>
+                <p class="text-gray-600 mb-6">/месяц</p>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">✓</span>
+                        <span>10,000 анализов</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">✓</span>
+                        <span>Web + REST API</span>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="text-green-600">✓</span>
+                        <span>Priority support</span>
+                    </li>
                 </ul>
-                <button class="btn btn-primary">Выбрать</button>
+                <button   
+                    onclick="selectPlan('pro'); openRegisterModal()"  
+                    class="w-full border-2 border-gray-200 py-2 rounded-lg font-bold hover:bg-gray-50"  
+                >
+                    Выбрать
+                </button>
             </div>
-        </div>
-    </section>
 
-    <section class="container">
-        <h2 style="text-align: center; margin-bottom: 2rem;">Кем используется</h2>
-        <div class="testimonials">
-            <div class="testimonial">
-                <h3>🏪 Авто-маркетплейсы</h3>
-                <p><strong>Приёмка авто:</strong> автоматизировали оценку повреждений при поступлении машин.<br><strong>Экономия:</strong> 20 часов/неделю на экспертизе</p>
-            </div>
-            <div class="testimonial">
-                <h3>🛡️ Страховые компании</h3>
-                <p><strong>Первая оценка:</strong> быстрая оценка ущерба в полях.<br><strong>Экономия:</strong> $200 на экспертизу за каждый случай</p>
-            </div>
-            <div class="testimonial">
-                <h3>👨‍🔧 Независимые оценщики</h3>
-                <p>Помощь при осмотре, документирование ущерба.<br><strong>Экономия:</strong> 30 минут на машину</p>
-            </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section id="faq" class="container">
-        <h2 style="text-align: center; margin-bottom: 2rem;">Частые вопросы</h2>
-        <div class="faq">
-            <div class="faq-item">
-                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                    <span>Как быстро ответ API?</span>
-                    <span>▼</span>
-                </div>
-                <div class="faq-answer">
-                    Средний ответ: 1.2 секунды. Максимум: 3 секунды (для больших фото). Зависит от размера и качества изображения.
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                    <span>Какие форматы фото поддерживаются?</span>
-                    <span>▼</span>
-                </div>
-                <div class="faq-answer">
-                    JPG, PNG, WebP. Размер до 10MB. Рекомендуемое разрешение: 720x480 и выше.
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question" onclick="this.parentElement.classList.toggle('active')">
-                    <span>Где хранятся мои фото?</span>
-                    <span>▼</span>
-                </div>
-                <div class="faq-answer">
-                    Фото удаляются сразу после анализа. Не сохраняются на серверах. Полная конфиденциальность.
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="container">
-        <h2 style="text-align: center; margin-bottom: 2rem;">Примеры использования</h2>
-        <div class="code-examples">
+<!-- API EXAMPLES -->
+<section id="examples" class="py-16 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center">Примеры кода</h2>
+        
+        <div class="space-y-12 max-w-4xl mx-auto">
+            <!-- cURL -->
             <div>
-                <h3>🐍 Python</h3>
-                <div class="code-example"><span class="keyword">import</span> requests
-
-API_URL = <span class="string">"https://api.example.com/api/detect"</span>
-API_KEY = <span class="string">"test-free-key"</span>
-
-<span class="keyword">with</span> <span class="function">open</span>(<span class="string">"car.jpg"</span>, <span class="string">"rb"</span>) <span class="keyword">as</span> f:
-    files = {<span class="string">"file"</span>: f}
-    headers = {<span class="string">"X-API-Key"</span>: API_KEY}
-    response = requests.<span class="function">post</span>(API_URL, files=files, headers=headers)
-
-data = response.<span class="function">json</span>()
-<span class="function">print</span>(<span class="string">f"Найдено повреждений: {data['count']}"</span>)</div>
+                <h3 class="text-2xl font-bold mb-4">cURL</h3>
+                <pre><code class="language-bash">curl -X POST \
+  https://car-damage-api.com/api/detect \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -F "file=@photo.jpg"</code></pre>
             </div>
-            <div>
-                <h3>💻 JavaScript</h3>
-                <div class="code-example"><span class="keyword">const</span> form = <span class="keyword">new</span> <span class="function">FormData</span>();
-form.<span class="function">append</span>(<span class="string">"file"</span>, fileInput.files[<span class="number">0</span>]);
 
-<span class="function">fetch</span>(<span class="string">"https://api.example.com/api/detect"</span>, {
-  method: <span class="string">"POST"</span>,
-  headers: {<span class="string">"X-API-Key"</span>: <span class="string">"test-free-key"</span>},
-  body: form
+            <!-- Python -->
+            <div>
+                <h3 class="text-2xl font-bold mb-4">Python</h3>
+                <pre><code class="language-python">import requests
+
+with open('photo.jpg', 'rb') as f:
+    r = requests.post(
+        'https://car-damage-api.com/api/detect',
+        headers={'X-API-Key': 'YOUR_API_KEY'},
+        files={'file': f}
+    )
+    print(r.json())</code></pre>
+            </div>
+
+            <!-- JavaScript -->
+            <div>
+                <h3 class="text-2xl font-bold mb-4">JavaScript</h3>
+                <pre><code class="language-javascript">const formData = new FormData();
+formData.append('file', fileInput.files[0]);
+
+fetch('https://car-damage-api.com/api/detect', {
+    method: 'POST',
+    headers: {'X-API-Key': 'YOUR_API_KEY'},
+    body: formData
 })
-.<span class="function">then</span>(r => r.<span class="function">json</span>())
-.<span class="function">then</span>(data => <span class="function">console</span>.<span class="function">log</span>(data));</div>
-            </div>
-            <div style="margin-top: 1.5rem;">
-                <h3>🔧 cURL</h3>
-                <div class="code-example">curl -X POST <span class="string">"https://api.example.com/api/detect"</span> \
-  -H <span class="string">"X-API-Key: test-free-key"</span> \
-  -F <span class="string">"file=@car.jpg"</span></div>
+.then(r => r.json())
+.then(data => console.log(data))</code></pre>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <footer>
-        <p>&copy; 2026 KastikCars. Все права защищены.</p>
-        <p>API для детекции повреждений автомобилей</p>
-    </footer>
+<!-- FAQ -->
+<section id="faq" class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center">Частые вопросы</h2>
+        
+        <div class="space-y-4 max-w-3xl mx-auto">
+            <details class="border rounded-lg p-4">
+                <summary class="font-bold cursor-pointer">Какая точность модели?</summary>
+                <p class="mt-2 text-gray-600">mAP 0.87 на test датасете. Обнаруживает: царапины, вмятины, трещины, разбитое стекло.</p>
+            </details>
 
-    <script>
-        const API_URL = 'https://car-damage-api-production.up.railway.app/api/detect';
-        const API_KEY = 'test-free-key';
+            <details class="border rounded-lg p-4">
+                <summary class="font-bold cursor-pointer">Как быстро ответ API?</summary>
+                <p class="mt-2 text-gray-600">Средний ответ: 1.2 секунды.</p>
+            </details>
 
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const imagePreview = document.getElementById('imagePreview');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const loading = document.getElementById('loading');
-        const errorMessage = document.getElementById('errorMessage');
-        const canvasContainer = document.getElementById('canvasContainer');
-        const resultCanvas = document.getElementById('resultCanvas');
-        const legend = document.getElementById('legend');
-        const legendContent = document.getElementById('legendContent');
+            <details class="border rounded-lg p-4">
+                <summary class="font-bold cursor-pointer">Какие форматы фото поддерживаются?</summary>
+                <p class="mt-2 text-gray-600">JPG, PNG, WebP. Размер до 10MB.</p>
+            </details>
 
-        const damageColors = {
-            'door': '#FF1744',
-            'lamp': '#00E5FF',
-            'taillight': '#FF6D00',
-            'wheel': '#9C27B0',
-            'window': '#00FF41',
-            'mirror': '#E600A4',
-            'fender': '#FFD600',
-            'bumper': '#E91E63',
-            'hood': '#1E88E5',
-            'roof': '#00F0FF',
-            'trunk': '#7B1FA2',
-            'windscreen_front': '#FFC400',
-            'windscreen_rear': '#FF7043',
-            'undamaged': '#76FF03'
-        };
+            <details class="border rounded-lg p-4">
+                <summary class="font-bold cursor-pointer">Безопасность данных?</summary>
+                <p class="mt-2 text-gray-600">Все загруженные фото удаляются сразу после анализа. Данные не хранятся.</p>
+            </details>
+        </div>
+    </div>
+</section>
 
-        uploadArea.addEventListener('click', () => fileInput.click());
+<!-- FOOTER -->
+<footer class="bg-gray-800 text-white py-8">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+        <p>© 2025 KastikCars. Все права защищены.</p>
+        <p class="text-sm text-gray-400 mt-2">support@kastikcars.com</p>
+    </div>
+</footer>
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                showPreview(e.target.files[0]);
-            }
+<script>
+// ==================== МОДАЛЬ РЕГИСТРАЦИИ ====================
+
+let selectedPlan = 'free';
+
+function openRegisterModal() {
+    document.getElementById('registerModal').classList.remove('modal-hidden');
+    document.getElementById('registerModal').classList.add('modal-visible');
+}
+
+function closeRegisterModal() {
+    document.getElementById('registerModal').classList.add('modal-hidden');
+    document.getElementById('registerModal').classList.remove('modal-visible');
+    document.getElementById('registerError').textContent = '';
+}
+
+function selectPlan(plan) {
+    selectedPlan = plan;
+    const planNames = {
+        'free': 'Free',
+        'starter': 'Starter',
+        'pro': 'Pro'
+    };
+    document.getElementById('planName').textContent = planNames[plan];
+}
+
+// ==================== РЕГИСТРАЦИЯ ====================
+
+async function registerUser() {
+    const email = document.getElementById('emailInput').value.trim();
+    const errorDiv = document.getElementById('registerError');
+    errorDiv.textContent = '';
+
+    // Валидация
+    if (!email) {
+        errorDiv.textContent = '❌ Введи email';
+        return;
+    }
+
+    if (!email.includes('@')) {
+        errorDiv.textContent = '❌ Неправильный email';
+        return;
+    }
+
+    try {
+        // Отправляем запрос на регистрацию
+        const response = await fetch('/api/register?email=' + encodeURIComponent(email), {
+            method: 'POST'
         });
 
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
+        const data = await response.json();
+
+        if (!response.ok) {
+            errorDiv.textContent = '❌ ' + data.detail;
+            return;
+        }
+
+        // Сохраняем API key в localStorage
+        localStorage.setItem('apiKey', data.api_key);
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('userPlan', selectedPlan);
+
+        // Закрываем модаль
+        closeRegisterModal();
+
+        // Показываем демо
+        showDemo();
+
+        // Очищаем форму
+        document.getElementById('emailInput').value = '';
+
+    } catch (error) {
+        errorDiv.textContent = '❌ Ошибка: ' + error.message;
+    }
+}
+
+// ==================== ДЕМО ====================
+
+function showDemo() {
+    document.getElementById('authSection').classList.add('hidden');
+    document.getElementById('userSection').classList.remove('hidden');
+    document.getElementById('demoSection').classList.remove('hidden');
+    
+    const email = localStorage.getItem('userEmail');
+    document.getElementById('userEmail').textContent = email;
+    
+    const apiKey = localStorage.getItem('apiKey');
+    document.getElementById('apiStatus').innerHTML = `
+        ✅ Вы вошли как: <strong>${email}</strong><br>
+        API Key: <code>${apiKey.substring(0, 10)}...</code>
+    `;
+}
+
+function logout() {
+    localStorage.removeItem('apiKey');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userPlan');
+    
+    document.getElementById('authSection').classList.remove('hidden');
+    document.getElementById('userSection').classList.add('hidden');
+    document.getElementById('demoSection').classList.add('hidden');
+}
+
+function checkLoggedIn() {
+    const apiKey = localStorage.getItem('apiKey');
+    if (apiKey) {
+        showDemo();
+    }
+}
+
+// ==================== ЗАГРУЗКА ФОТО ====================
+
+document.getElementById('photoInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const apiKey = localStorage.getItem('apiKey');
+    if (!apiKey) {
+        alert('Сначала зарегистрируйся!');
+        return;
+    }
+
+    // Формируем FormData
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const resultsDiv = document.getElementById('resultsContainer');
+    resultsDiv.innerHTML = '<p class="text-gray-500">⏳ Анализирую фото...</p>';
+
+    try {
+        const response = await fetch('/api/detect', {
+            method: 'POST',
+            headers: {
+                'X-API-Key': apiKey
+            },
+            body: formData
         });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+        const data = await response.json();
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files;
-                showPreview(e.dataTransfer.files[0]);
-            }
-        });
-
-        function showPreview(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                imagePreview.src = e.target.result;
-                uploadArea.classList.add('has-image');
-                analyzeBtn.style.display = 'block';
-                canvasContainer.style.display = 'none';
-                legend.style.display = 'none';
-                errorMessage.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
+        if (!response.ok) {
+            resultsDiv.innerHTML = `<p class="text-red-600">❌ ${data.detail}</p>`;
+            return;
         }
 
-        analyzeBtn.addEventListener('click', analyzeImage);
-
-        async function analyzeImage() {
-            if (!fileInput.files[0]) return;
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            loading.style.display = 'block';
-            analyzeBtn.disabled = true;
-            errorMessage.style.display = 'none';
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'X-API-Key': API_KEY
-                    },
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.detections && Array.isArray(data.detections)) {
-                    drawResults(data.detections);
-                } else {
-                    throw new Error('Invalid API response format');
-                }
-            } catch (error) {
-                showError(error.message);
-            } finally {
-                loading.style.display = 'none';
-                analyzeBtn.disabled = false;
-            }
+        // Показываем результаты
+        if (data.detections.length === 0) {
+            resultsDiv.innerHTML = '<p class="text-green-600">✅ Повреждений не найдено</p>';
+        } else {
+            let html = `<p class="text-orange-600 mb-4">⚠️ Найдено ${data.count} повреждений:</p>`;
+            html += '<ul class="text-left space-y-2">';
+            
+            data.detections.forEach((det, i) => {
+                html += `
+                    <li class="bg-white p-2 rounded border-l-4 border-orange-400">
+                        <strong>${i + 1}. ${det.class}</strong><br>
+                        Уверенность: ${(det.confidence * 100).toFixed(1)}%
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            resultsDiv.innerHTML = html;
         }
 
-        function drawResults(results) {
-            console.log('API Response detections:', results);
-            const img = new Image();
-            img.onload = () => {
-                resultCanvas.width = img.width;
-                resultCanvas.height = img.height;
-                const ctx = resultCanvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-
-                const damages = {};
-
-                results.forEach(result => {
-                    const bbox = result.bbox;
-                    const x1 = bbox.x1;
-                    const y1 = bbox.y1;
-                    const x2 = bbox.x2;
-                    const y2 = bbox.y2;
-                    
-                    const className = result.class_en || 'unknown';
-                    const color = damageColors[className] || '#FF00FF';
-
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-
-                    const label = className.charAt(0).toUpperCase() + className.slice(1).toLowerCase();
-                    ctx.font = 'bold 18px Arial';
-                    const textWidth = ctx.measureText(label).width;
-                    
-                    ctx.fillStyle = color;
-                    ctx.fillRect(x1, y1 - 35, textWidth + 12, 32);
-
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.fillText(label, x1 + 6, y1 - 12);
-
-                    damages[className] = (damages[className] || 0) + 1;
-                });
-
-                canvasContainer.style.display = 'block';
-                legend.style.display = 'none';
-
-                legendContent.innerHTML = '';
-                Object.entries(damages).forEach(([className, count]) => {
-                    const color = damageColors[className] || '#FF00FF';
-                    const displayName = className.charAt(0).toUpperCase() + className.slice(1).toLowerCase();
-                    legendContent.innerHTML += `
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: ${color}"></div>
-                            <span>${displayName} (${count})</span>
-                        </div>
-                    `;
-                });
-            };
-            img.src = imagePreview.src;
+        // Обновляем статус использования
+        if (data.plan === 'free') {
+            document.getElementById('apiStatus').innerHTML += `<br>Баланс: $${data.balance_remaining}`;
+        } else {
+            document.getElementById('apiStatus').innerHTML += `<br>Использовано: ${data.requests_used}/${data.requests_limit}`;
         }
 
-        function showError(message) {
-            errorMessage.textContent = '❌ Ошибка: ' + message;
-            errorMessage.style.display = 'block';
-        }
+    } catch (error) {
+        resultsDiv.innerHTML = `<p class="text-red-600">❌ Ошибка: ${error.message}</p>`;
+    }
+});
 
-        function scrollToSection(id) {
-            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-        }
-    </script>
+// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+
+// Подсвечиваем код при загрузке
+window.addEventListener('load', () => {
+    checkLoggedIn();
+    document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+    });
+});
+</script>
+
 </body>
 </html>
