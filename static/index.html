@@ -1137,7 +1137,8 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                 localStorage.setItem('userEmail', userEmail);
 
                 closeAuthModal();
-                loadUserData();
+                // ✅ Сразу загружаем данные пользователя после входа
+                await loadUserData();
                 document.getElementById('loginEmail').value = '';
                 document.getElementById('loginPassword').value = '';
             } catch (error) {
@@ -1180,7 +1181,8 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                 localStorage.setItem('userEmail', userEmail);
 
                 closeAuthModal();
-                loadUserData();
+                // ✅ Сразу загружаем данные пользователя после регистрации
+                await loadUserData();
                 document.getElementById('registerEmail').value = '';
                 document.getElementById('registerPassword').value = '';
                 document.getElementById('registerPassword2').value = '';
