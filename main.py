@@ -1,5 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends, Request
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -12,31 +14,25 @@ import numpy as np
 from datetime import datetime, timedelta
 import logging
 import os
-import sys
 
 # ==================== DATABASE ====================
 from sqlalchemy import create_engine, Column, String, Integer, Float, DateTime, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 import secrets
 
-# Database Setup - MUST have DATABASE_URL environment variable
+# Database Setup
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    logger_temp = logging.getLogger(__name__)
-    logger_temp.error("❌ CRITICAL: DATABASE_URL environment variable is not set!")
-    logger_temp.error("Railway must pass DATABASE_URL from Postgres plugin")
-    sys.exit(1)
+    logger_init = logging.getLogger("DATABASE")
+    logger_init.error("DATABASE_URL environment variable not set!")
+    raise ValueError("DATABASE_URL environment variable is required")
 
-print(f"📌 Connecting to database: {DATABASE_URL.split('@')[0]}@***")
+logger_init = logging.getLogger("DATABASE")
+logger_init.info(f"Connecting to database...")
 
-try:
-    engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-except Exception as e:
-    print(f"❌ Failed to create database engine: {e}")
-    sys.exit(1)
-
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, echo=False)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # ==================== USER MODEL ====================
@@ -90,6 +86,11 @@ app.add_middleware(
 
 # Rate limiting
 limiter = Limiter(key_func=get_remote_address)
+
+# Static files
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Logging
 logging.basicConfig(level=logging.INFO)
@@ -182,7 +183,15 @@ async def startup_event():
         logger.error(f"❌ Ошибка при инициализации БД: {e}")
         raise
 
-# ==================== HEALTH & INFO ====================
+# ==================== ROOT & HEALTH ====================
+
+@app.get("/")
+async def root():
+    """Serve index.html from static folder"""
+    index_path = STATIC_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path, media_type="text/html")
+    return {"error": "index.html not found in static/"}
 
 @app.get("/health")
 async def health():
@@ -572,5 +581,5 @@ async def rate_limit_handler(request, exc):
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", 8000))  # ← читаем PORT из Railway
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    PORT = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=PORT)
