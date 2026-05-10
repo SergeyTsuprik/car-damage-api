@@ -192,6 +192,36 @@ def correct_class_by_bbox(detections: list, img_width: int) -> list:
     
     return detections
 
+def remove_nested_boxes(detections: list) -> list:
+    """Удаляет вложенные боксы одного класса, оставляет только внешний (больший)"""
+    filtered = []
+    
+    for i, det_i in enumerate(detections):
+        is_nested = False
+        
+        for j, det_j in enumerate(detections):
+            if i == j or det_i["class_en"] != det_j["class_en"]:
+                continue
+            
+            # Проверяем, полностью ли det_i внутри det_j
+            if (det_j["bbox"]["x1"] <= det_i["bbox"]["x1"] and
+                det_j["bbox"]["y1"] <= det_i["bbox"]["y1"] and
+                det_j["bbox"]["x2"] >= det_i["bbox"]["x2"] and
+                det_j["bbox"]["y2"] >= det_i["bbox"]["y2"]):
+                
+                # Проверяем, что det_j заметно больше
+                area_i = (det_i["bbox"]["x2"] - det_i["bbox"]["x1"]) * (det_i["bbox"]["y2"] - det_i["bbox"]["y1"])
+                area_j = (det_j["bbox"]["x2"] - det_j["bbox"]["x1"]) * (det_j["bbox"]["y2"] - det_j["bbox"]["y1"])
+                
+                if area_j > area_i * 1.1:  # det_j на 10% больше
+                    is_nested = True
+                    break
+        
+        if not is_nested:
+            filtered.append(det_i)
+    
+    return filtered
+
 def remove_conflicting_detections(detections: list) -> list:
     """Удаляет конфликтующие детекции (bumper_front vs bumper_rear)"""
     conflict_pairs = [
@@ -214,6 +244,7 @@ def remove_conflicting_detections(detections: list) -> list:
 def filter_detections(detections: list) -> list:
     """Удаляет дубликаты и применяет маппинг классов"""
     detections = remove_conflicting_detections(detections)
+    detections = remove_nested_boxes(detections)  # Новое: удаляем вложенные боксы
     
     class_count = {}
     filtered = []
@@ -333,7 +364,6 @@ async def startup_event():
     """Инициализация БД при старте приложения"""
     try:
         logger.info("🔄 Инициализирую БД...")
-        Base.metadata.drop_all(bind=engine)  # TODO: убрать после первого успешного деплоя
         Base.metadata.create_all(bind=engine)
         logger.info("✅ БД инициализирована успешно!")
     except Exception as e:
