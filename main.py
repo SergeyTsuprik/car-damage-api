@@ -193,6 +193,7 @@ async def startup_event():
     """Инициализация БД при старте приложения"""
     try:
         logger.info("🔄 Инициализирую БД...")
+        Base.metadata.drop_all(bind=engine)  # TODO: убрать после первого успешного деплоя
         Base.metadata.create_all(bind=engine)
         logger.info("✅ БД инициализирована успешно!")
     except Exception as e:
@@ -233,7 +234,7 @@ async def models_info():
 # ==================== AUTH ENDPOINTS ====================
 
 @app.post("/api/register")
-async def register(email: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
+async def register(email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     """Регистрирует нового юзера с plan=free"""
     
     # Проверяем дубликат
@@ -275,7 +276,7 @@ async def register(email: str = Form(), password: str = Form(), db: Session = De
     }
 
 @app.post("/api/login")
-async def login(email: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
+async def login(email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     """Вход по email и пароль"""
     
     user = db.query(User).filter(User.email == email).first()
