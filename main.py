@@ -274,7 +274,8 @@ async def detect_damage(
         nparr = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
-        results = model(img)
+        # Model inference with confidence threshold
+        results = model(img, conf=0.13)
         detections = []
         
         for result in results:

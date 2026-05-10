@@ -12,6 +12,7 @@
         .modal-visible { display: flex; }
         code { font-family: 'Courier New', monospace; }
     </style>
+
 </head>
 <body class="bg-gray-50">
 
@@ -101,36 +102,47 @@
         <h2 class="text-3xl font-bold mb-12 text-center">Анализ повреждений</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Загрузка фото -->
-            <div class="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center bg-blue-50">
-                <input   
-                    id="photoInput"   
-                    type="file"   
-                    accept="image/*"  
-                    class="hidden"  
-                >
-                <button   
-                    onclick="document.getElementById('photoInput').click()"  
-                    class="bg-blue-600 text-white px-6 py-3 rounded font-bold hover:bg-blue-700"  
-                >
-                    📸 Загрузить фото
-                </button>
-                <p class="text-gray-600 text-sm mt-4">PNG, JPG, WebP до 10MB</p>
+            <!-- Загрузка фото (слева) -->
+            <div class="flex flex-col">
+                <div class="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center bg-blue-50">
+                    <input   
+                        id="photoInput"   
+                        type="file"   
+                        accept="image/*"  
+                        class="hidden"  
+                    >
+                    <button   
+                        onclick="document.getElementById('photoInput').click()"  
+                        class="bg-blue-600 text-white px-6 py-3 rounded font-bold hover:bg-blue-700"  
+                    >
+                        📸 Загрузить фото
+                    </button>
+                    <p class="text-gray-600 text-sm mt-4">PNG, JPG, WebP до 10MB</p>
+                </div>
+                
+                <!-- Изображение после загрузки (слева) -->
+                <div id="imageContainer" class="hidden mt-4 flex-1">
+                    <h3 class="text-lg font-bold mb-3">Загруженное фото</h3>
+                    <div class="relative bg-gray-200 rounded overflow-hidden" style="max-width: 100%; aspect-ratio: 1;">
+                        <img id="uploadedImage" src="" alt="Загруженное фото" class="w-full h-full object-contain block">
+                        <canvas id="boundingBoxCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                    </div>
+                    <button   
+                        id="analyzeBtn"
+                        onclick="analyzePhoto()"  
+                        class="w-full bg-green-600 text-white py-3 rounded font-bold hover:bg-green-700 mt-4"  
+                    >
+                        🔍 Анализировать
+                    </button>
+                </div>
             </div>
 
-            <!-- Изображение и результаты -->
+            <!-- Результаты анализа (справа) -->
             <div class="border rounded-lg p-8 bg-gray-50">
                 <h3 class="text-lg font-bold mb-4">Результат анализа</h3>
                 
-                <div id="imageContainer" class="mb-4 hidden">
-                    <div class="relative inline-block w-full">
-                        <img id="uploadedImage" src="" alt="Загруженное фото" class="w-full rounded">
-                        <canvas id="boundingBoxCanvas" class="absolute top-0 left-0 w-full h-full rounded"></canvas>
-                    </div>
-                </div>
-                
-                <div id="resultsContainer" class="text-gray-500">
-                    Загрузи фото для анализа
+                <div id="resultsContainer" class="text-gray-500 min-h-32 flex items-center">
+                    Загрузи фото и нажми кнопку анализа
                 </div>
             </div>
         </div>
@@ -422,7 +434,9 @@ function checkLoggedIn() {
 
 // ==================== ЗАГРУЗКА ФОТО ====================
 
-document.getElementById('photoInput')?.addEventListener('change', async (e) => {
+let currentFile = null;
+
+document.getElementById('photoInput')?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -432,20 +446,36 @@ document.getElementById('photoInput')?.addEventListener('change', async (e) => {
         return;
     }
 
+    currentFile = file;
+
     // Показываем загруженное изображение
     const reader = new FileReader();
     reader.onload = (event) => {
         document.getElementById('uploadedImage').src = event.target.result;
         document.getElementById('imageContainer').classList.remove('hidden');
+        document.getElementById('resultsContainer').innerHTML = 'Нажми кнопку "Анализировать" для начала';
+        
+        // Очищаем canvas
+        const canvas = document.getElementById('boundingBoxCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
     reader.readAsDataURL(file);
+});
 
-    // Формируем FormData
+async function analyzePhoto() {
+    if (!currentFile) return;
+
+    const apiKey = localStorage.getItem('apiKey');
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', currentFile);
 
     const resultsDiv = document.getElementById('resultsContainer');
-    resultsDiv.innerHTML = '<p class="text-gray-500">⏳ Анализирую фото...</p>';
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = '⏳ Анализирую...';
+    resultsDiv.innerHTML = '<p class="text-gray-500">⏳ Обработка фото...</p>';
 
     try {
         const response = await fetch('/api/detect', {
@@ -460,11 +490,15 @@ document.getElementById('photoInput')?.addEventListener('change', async (e) => {
 
         if (!response.ok) {
             resultsDiv.innerHTML = `<p class="text-red-600">❌ ${data.detail}</p>`;
+            analyzeBtn.disabled = false;
+            analyzeBtn.textContent = '🔍 Анализировать';
             return;
         }
 
         // Рисуем bounding boxes
-        drawBoundingBoxes(data.detections);
+        if (data.detections && data.detections.length > 0) {
+            drawBoundingBoxes(data.detections);
+        }
 
         // Показываем результаты
         if (data.detections.length === 0) {
@@ -488,58 +522,84 @@ document.getElementById('photoInput')?.addEventListener('change', async (e) => {
 
     } catch (error) {
         resultsDiv.innerHTML = `<p class="text-red-600">❌ Ошибка: ${error.message}</p>`;
+    } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '🔍 Анализировать';
     }
-});
+}
 
 // ==================== РИСОВАНИЕ BOUNDING BOXES ====================
 
 function drawBoundingBoxes(detections) {
     const canvas = document.getElementById('boundingBoxCanvas');
     const img = document.getElementById('uploadedImage');
+    const container = img.parentElement;
     
-    if (!img.complete) {
-        img.onload = () => drawBoxes();
-    } else {
-        drawBoxes();
-    }
-
     function drawBoxes() {
-        canvas.width = img.offsetWidth;
-        canvas.height = img.offsetHeight;
+        // Устанавливаем размер canvas
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+        
         const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const scaleX = canvas.width / img.naturalWidth;
-        const scaleY = canvas.height / img.naturalHeight;
+        // Вычисляем масштаб
+        const displayWidth = img.offsetWidth;
+        const displayHeight = img.offsetHeight;
+        const naturalWidth = img.naturalWidth;
+        const naturalHeight = img.naturalHeight;
+
+        const scaleX = displayWidth / naturalWidth;
+        const scaleY = displayHeight / naturalHeight;
 
         const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
 
         detections.forEach((det, i) => {
-            const x = det.bbox[0] * scaleX;
-            const y = det.bbox[1] * scaleY;
-            const w = (det.bbox[2] - det.bbox[0]) * scaleX;
-            const h = (det.bbox[3] - det.bbox[1]) * scaleY;
+            // Координаты из API (оригинальные размеры)
+            const x1 = det.bbox.x1 * scaleX;
+            const y1 = det.bbox.y1 * scaleY;
+            const x2 = det.bbox.x2 * scaleX;
+            const y2 = det.bbox.y2 * scaleY;
+            const w = x2 - x1;
+            const h = y2 - y1;
 
             const color = colors[i % colors.length];
+            const confidence = Math.round(det.confidence * 100);
+            const label = det.class + ' ' + confidence + '%';
 
             // Рисуем прямоугольник
             ctx.strokeStyle = color;
             ctx.lineWidth = 3;
-            ctx.strokeRect(x, y, w, h);
+            ctx.strokeRect(x1, y1, w, h);
 
             // Рисуем фон для текста
+            ctx.font = 'bold 13px Arial';
+            const textMetrics = ctx.measureText(label);
+            const textWidth = textMetrics.width + 8;
+            const textHeight = 22;
+            
+            const textY = Math.max(textHeight, y1);
             ctx.fillStyle = color;
-            ctx.fillRect(x, y - 25, w, 25);
+            ctx.fillRect(x1, textY - textHeight, textWidth, textHeight);
 
             // Рисуем текст
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 12px Arial';
-            ctx.fillText(`${det.class} (${(det.confidence * 100).toFixed(0)}%)`, x + 5, y - 8);
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, x1 + 4, textY - textHeight / 2);
         });
+    }
+
+    // Ждём загрузки изображения
+    if (!img.complete) {
+        img.onload = drawBoxes;
+    } else {
+        drawBoxes();
     }
 }
 
 // Проверяем при загрузке страницы
 window.addEventListener('load', checkLoggedIn);
+
 </script>
 
 </body>
