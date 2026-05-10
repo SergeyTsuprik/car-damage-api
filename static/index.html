@@ -1384,8 +1384,14 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                 }
 
                 const data = await response.json();
+                
+                // ✅ ВАЖНО: обновляем счётчик СРАЗУ из ответа /api/detect
+                if (data.requests_remaining !== undefined) {
+                    document.getElementById('requestsRemaining').textContent = data.requests_remaining;
+                    console.log(`✅ Счётчик обновлён: ${data.requests_remaining} осталось`);
+                }
+                
                 drawResults(data.detections);
-                loadUserData();
             } catch (error) {
                 showError(error.message);
             } finally {
