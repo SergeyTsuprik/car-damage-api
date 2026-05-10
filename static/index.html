@@ -985,10 +985,14 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
             const errorDiv = document.getElementById('loginError');
 
             try {
+                const formData = new URLSearchParams();
+                formData.append('email', email);
+                formData.append('password', password);
+                
                 const response = await fetch(API_URL + '/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `email=${email}&password=${password}`
+                    body: formData
                 });
 
                 const data = await response.json();
@@ -1025,10 +1029,14 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
             }
 
             try {
+                const formData = new URLSearchParams();
+                formData.append('email', email);
+                formData.append('password', password);
+                
                 const response = await fetch(API_URL + '/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `email=${email}&password=${password}`
+                    body: formData
                 });
 
                 const data = await response.json();
@@ -1056,7 +1064,7 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
         async function loadUserData() {
             try {
                 const response = await fetch(API_URL + '/api/me', {
-                    headers: { 'Authorization': sessionToken }
+                    headers: { 'X-Session-Token': sessionToken }
                 });
 
                 if (!response.ok) {
@@ -1175,7 +1183,7 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
             try {
                 const response = await fetch(API_URL + '/api/detect', {
                     method: 'POST',
-                    headers: { 'Authorization': sessionToken },
+                    headers: { 'X-Session-Token': sessionToken },
                     body: formData
                 });
 
