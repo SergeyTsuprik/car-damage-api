@@ -513,13 +513,21 @@ async def login(email: str = Form(...), password: str = Form(...), db: Session =
 
 @app.post("/api/generate-api-key")
 async def generate_api_key_endpoint(session_token: str = Header(..., alias="X-Session-Token"), db: Session = Depends(get_db)):
-    """Генерирует API ключ для пользователя"""
+    """Генерирует API ключ для пользователя (один на юзера, вечный)"""
     
     user = get_user_by_session_token(session_token, db)
     
+    # Если ключ уже существует — возвращаем старый
     if user.api_key:
-        logger.info(f"⚠️ API key already exists for {user.email}, regenerating")
+        logger.info(f"ℹ️ API key already exists for {user.email}, returning existing")
+        return {
+            "status": "ok",
+            "message": "API key already exists",
+            "api_key": user.api_key,
+            "warning": "Keep your API key safe. It provides paid access to the API."
+        }
     
+    # Генерируем новый ключ только если его ещё нет
     user.api_key = generate_api_key()
     db.commit()
     db.refresh(user)
@@ -611,6 +619,7 @@ async def detect_damage(
             )
         
         user.balance -= cost_per_request
+        user.used += 1  # Считаем для счётчика
         logger.info(f"API request from {user.email}, balance: ${user.balance:.2f}")
     
     else:  # auth_type == "web"
@@ -635,7 +644,7 @@ async def detect_damage(
                 user.overage_charges += overage_cost
                 logger.warning(f"Overage for {user.email}: ${overage_cost:.2f}")
             
-            user.used += 1
+            user.used += 1  # Считаем все запросы
     
     db.commit()
     
