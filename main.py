@@ -20,7 +20,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 import secrets
 
 # Database Setup - MUST have DATABASE_URL environment variable
-DATABASE_URL = os.getenv("DATABASE_URL") or "postgresql://postgres:QYYwDEQ1SmGrbsBRDLnxCbNiCsyLkDp@postgres.railway.internal:5432/railway"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
     logger_temp = logging.getLogger(__name__)
