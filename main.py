@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends, Request, Form, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends, Request, Form
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -233,7 +233,7 @@ async def models_info():
 # ==================== AUTH ENDPOINTS ====================
 
 @app.post("/api/register")
-async def register(email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+async def register(email: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
     """Регистрирует нового юзера с plan=free"""
     
     # Проверяем дубликат
@@ -275,7 +275,7 @@ async def register(email: str = Form(...), password: str = Form(...), db: Sessio
     }
 
 @app.post("/api/login")
-async def login(email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+async def login(email: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
     """Вход по email и пароль"""
     
     user = db.query(User).filter(User.email == email).first()
