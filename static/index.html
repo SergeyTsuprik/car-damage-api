@@ -104,6 +104,18 @@
             background: #ee5a52;
         }
 
+        .btn-api {
+            background: transparent;
+            color: #5b7cfa;
+            border: 1px solid #5b7cfa;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-api:hover {
+            background: #f0f4ff;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -233,6 +245,64 @@
         .form-submit:disabled {
             background: #999;
             cursor: not-allowed;
+        }
+
+        .api-key-display {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .api-key-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .api-key-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .api-key-value {
+            flex: 1;
+            background: white;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            user-select: all;
+        }
+
+        .btn-copy {
+            padding: 0.75rem 1.5rem;
+            background: #5b7cfa;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-copy:hover {
+            background: #4c6ef5;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .success-message.visible {
+            display: block;
         }
 
         .logo-section {
@@ -684,6 +754,7 @@
             </div>
             <div class="nav-right">
                 <div id="userSection" style="display: none;" class="user-email">Email: <span id="userEmail"></span></div>
+                <button id="apiKeyBtn" class="btn btn-api" onclick="openApiKeyModal()" style="display: none;">🔑 API ключ</button>
                 <button id="loginBtn" class="btn btn-primary" onclick="openAuthModal()">Войти</button>
                 <button id="logoutBtn" class="btn btn-logout" onclick="logout()" style="display: none;">Выход</button>
             </div>
@@ -738,6 +809,50 @@
                     <button type="submit" class="form-submit">Зарегистрироваться</button>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>API ключ</h2>
+                <button class="modal-close" onclick="closeApiKeyModal()">✕</button>
+            </div>
+
+            <div id="apiKeyLoading" style="display: none;">
+                <div class="spinner" style="margin-bottom: 1rem;"></div>
+                <p>Генерирую ключ...</p>
+            </div>
+
+            <div id="apiKeyContent" style="display: none;">
+                <div class="success-message visible">
+                    ✓ Ключ сгенерирован успешно
+                </div>
+
+                <div class="api-key-display">
+                    <div class="api-key-label">Ваш API ключ:</div>
+                    <div class="api-key-container">
+                        <div class="api-key-value" id="apiKeyValue"></div>
+                        <button type="button" class="btn-copy" onclick="copyApiKey()">Копировать</button>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.9rem; color: #666; margin-top: 1.5rem;">
+                    <strong>Используй этот ключ в API запросах:</strong>
+                </p>
+
+                <div class="code-example" style="margin-top: 1rem;">
+<span class="keyword">curl</span> -X POST <span class="string">"https://api.example.com/api/detect"</span> \
+  -H <span class="string">"X-API-Key: </span><span id="apiKeyExample">sk_...</span><span class="string">"</span> \
+  -F <span class="string">"file=@car.jpg"</span></div>
+
+                <p style="font-size: 0.85rem; color: #999; margin-top: 1rem; line-height: 1.6;">
+                    ⚠️ <strong>Важно:</strong> Держи этот ключ в секрете. Не публикуй его в публичных репозиториях или клиентском коде.
+                </p>
+            </div>
+
+            <div id="apiKeyError" class="error-message"></div>
         </div>
     </div>
 
@@ -879,7 +994,7 @@
         <h2 style="text-align: center; margin-bottom: 2rem;">Примеры использования</h2>
         <div class="code-examples">
             <div>
-                <h3>🐍 Python</h3>
+                <h3>🐍 Python (Web UI - Session Token)</h3>
                 <div class="code-example"><span class="keyword">import</span> requests
 
 API_URL = <span class="string">"https://api.example.com/api/detect"</span>
@@ -887,29 +1002,44 @@ session_token = <span class="string">"YOUR_SESSION_TOKEN"</span>
 
 <span class="keyword">with</span> <span class="function">open</span>(<span class="string">"car.jpg"</span>, <span class="string">"rb"</span>) <span class="keyword">as</span> f:
     files = {<span class="string">"file"</span>: f}
-    headers = {<span class="string">"Authorization"</span>: session_token}
+    headers = {<span class="string">"X-Session-Token"</span>: session_token}
     response = requests.<span class="function">post</span>(API_URL, files=files, headers=headers)
 
 data = response.<span class="function">json</span>()
 <span class="function">print</span>(<span class="string">f"Найдено повреждений: {data['count']}"</span>)</div>
             </div>
             <div>
-                <h3>💻 JavaScript</h3>
+                <h3>🔑 Python (API Key)</h3>
+                <div class="code-example"><span class="keyword">import</span> requests
+
+API_URL = <span class="string">"https://api.example.com/api/detect"</span>
+api_key = <span class="string">"sk_YOUR_API_KEY"</span>
+
+<span class="keyword">with</span> <span class="function">open</span>(<span class="string">"car.jpg"</span>, <span class="string">"rb"</span>) <span class="keyword">as</span> f:
+    files = {<span class="string">"file"</span>: f}
+    headers = {<span class="string">"X-API-Key"</span>: api_key}
+    response = requests.<span class="function">post</span>(API_URL, files=files, headers=headers)
+
+data = response.<span class="function">json</span>()
+<span class="function">print</span>(<span class="string">f"Стоимость: ${data['cost']}"</span>)</div>
+            </div>
+            <div>
+                <h3>💻 JavaScript (API Key)</h3>
                 <div class="code-example"><span class="keyword">const</span> form = <span class="keyword">new</span> <span class="function">FormData</span>();
 form.<span class="function">append</span>(<span class="string">"file"</span>, fileInput.files[<span class="number">0</span>]);
 
 <span class="function">fetch</span>(<span class="string">"https://api.example.com/api/detect"</span>, {
   method: <span class="string">"POST"</span>,
-  headers: {<span class="string">"Authorization"</span>: sessionToken},
+  headers: {<span class="string">"X-API-Key"</span>: <span class="string">"sk_YOUR_API_KEY"</span>},
   body: form
 })
 .<span class="function">then</span>(r => r.<span class="function">json</span>())
 .<span class="function">then</span>(data => <span class="function">console</span>.<span class="function">log</span>(data));</div>
             </div>
             <div style="margin-top: 1.5rem;">
-                <h3>🔧 cURL</h3>
+                <h3>🔧 cURL (API Key)</h3>
                 <div class="code-example">curl -X POST <span class="string">"https://api.example.com/api/detect"</span> \
-  -H <span class="string">"Authorization: YOUR_SESSION_TOKEN"</span> \
+  -H <span class="string">"X-API-Key: sk_YOUR_API_KEY"</span> \
   -F <span class="string">"file=@car.jpg"</span></div>
             </div>
         </div>
@@ -1082,6 +1212,7 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
             if (currentUser) {
                 document.getElementById('loginBtn').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('apiKeyBtn').style.display = 'block';
                 document.getElementById('userSection').style.display = 'block';
                 document.getElementById('userEmail').textContent = currentUser.email;
                 document.getElementById('requestsRemaining').textContent = currentUser.requests_remaining || 0;
@@ -1089,6 +1220,7 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
             } else {
                 document.getElementById('loginBtn').style.display = 'block';
                 document.getElementById('logoutBtn').style.display = 'none';
+                document.getElementById('apiKeyBtn').style.display = 'none';
                 document.getElementById('userSection').style.display = 'none';
                 document.getElementById('demoSection').classList.remove('visible');
             }
@@ -1109,6 +1241,67 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
             } else {
                 scrollToSection('demo');
             }
+        }
+
+        // ==================== API KEY ====================
+        function openApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.add('active');
+            generateApiKey();
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.remove('active');
+            document.getElementById('apiKeyLoading').style.display = 'none';
+            document.getElementById('apiKeyContent').style.display = 'none';
+            document.getElementById('apiKeyError').classList.remove('visible');
+            document.getElementById('apiKeyError').textContent = '';
+        }
+
+        async function generateApiKey() {
+            const loading = document.getElementById('apiKeyLoading');
+            const content = document.getElementById('apiKeyContent');
+            const errorDiv = document.getElementById('apiKeyError');
+
+            loading.style.display = 'block';
+            content.style.display = 'none';
+            errorDiv.classList.remove('visible');
+
+            try {
+                const response = await fetch(API_URL + '/api/generate-api-key', {
+                    method: 'POST',
+                    headers: { 'X-Session-Token': sessionToken }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Ошибка генерации ключа');
+                }
+
+                document.getElementById('apiKeyValue').textContent = data.api_key;
+                document.getElementById('apiKeyExample').textContent = data.api_key;
+
+                loading.style.display = 'none';
+                content.style.display = 'block';
+            } catch (error) {
+                loading.style.display = 'none';
+                errorDiv.textContent = '❌ ' + error.message;
+                errorDiv.classList.add('visible');
+            }
+        }
+
+        function copyApiKey() {
+            const apiKey = document.getElementById('apiKeyValue').textContent;
+            navigator.clipboard.writeText(apiKey).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Скопировано';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
         }
 
         // ==================== UPLOAD & ANALYZE ====================
@@ -1192,7 +1385,7 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
 
                 const data = await response.json();
                 drawResults(data.detections);
-                loadUserData(); // Refresh request count
+                loadUserData();
             } catch (error) {
                 showError(error.message);
             } finally {
@@ -1221,12 +1414,10 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                     const className = result.class || 'unknown';
                     const color = damageColors[className] || '#FF00FF';
 
-                    // Draw bounding box
                     ctx.strokeStyle = color;
                     ctx.lineWidth = 2;
                     ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
 
-                    // Draw label with background
                     const label = className.charAt(0).toUpperCase() + className.slice(1).toLowerCase();
                     ctx.font = 'bold 16px Arial';
                     const textMetrics = ctx.measureText(label);
@@ -1235,11 +1426,9 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                     const labelX = x1;
                     const labelY = Math.max(y1 - textHeight - 5, 20);
                     
-                    // Background rectangle for label
                     ctx.fillStyle = color;
                     ctx.fillRect(labelX, labelY, textWidth, textHeight);
                     
-                    // White text
                     ctx.fillStyle = '#FFFFFF';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(label, labelX + 5, labelY + textHeight / 2);

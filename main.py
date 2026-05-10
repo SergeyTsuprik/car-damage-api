@@ -45,11 +45,12 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
     session_token = Column(String, unique=True, index=True, nullable=True)
+    api_key = Column(String, unique=True, index=True, nullable=True)
     
     # Subscription data
     plan = Column(String, default="free")  # free, starter, pro
     limit = Column(Integer, default=10)  # 10 для free, 1000 для starter, 10000 для pro
-    used = Column(Integer, default=0)  # счётчик в текущем месяце
+    used = Column(Integer, default=0)  # счётчик в текущем месяце (только для starter/pro)
     
     # Balance для всех планов (обновляется каждый месяц)
     balance = Column(Float, default=1.50)  # $1.50 для free = 10 запросов
@@ -338,6 +339,10 @@ def generate_session_token() -> str:
     """Генерирует уникальный session token"""
     return secrets.token_urlsafe(32)
 
+def generate_api_key() -> str:
+    """Генерирует уникальный API ключ (длиннее для безопасности)"""
+    return f"sk_{secrets.token_urlsafe(48)}"
+
 def check_reset_date(user: User, db: Session):
     """Проверяет нужно ли сбросить счётчик и обновить balance"""
     if user.reset_date is None or datetime.utcnow() >= user.reset_date:
@@ -357,6 +362,13 @@ def get_user_by_session_token(session_token: str, db: Session):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     return user
 
+def get_user_by_api_key(api_key: str, db: Session):
+    """Получает юзера по API key"""
+    user = db.query(User).filter(User.api_key == api_key).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return user
+
 # ==================== STARTUP EVENT ====================
 
 @app.on_event("startup")
@@ -365,6 +377,34 @@ async def startup_event():
     try:
         logger.info("🔄 Инициализирую БД...")
         Base.metadata.create_all(bind=engine)
+        
+        # Миграция: добавляем колонок api_key если его нет (для Railway PostgreSQL)
+        db = SessionLocal()
+        try:
+            from sqlalchemy import text
+            # Проверяем существует ли колонок
+            result = db.execute(text(
+                "SELECT column_name FROM information_schema.columns "
+                "WHERE table_name='users' AND column_name='api_key'"
+            ))
+            if not result.fetchone():
+                # Колонок не существует, добавляем
+                db.execute(text(
+                    "ALTER TABLE users ADD COLUMN api_key VARCHAR UNIQUE"
+                ))
+                db.execute(text(
+                    "CREATE INDEX ix_users_api_key ON users (api_key)"
+                ))
+                db.commit()
+                logger.info("✅ Добавлен колонок api_key")
+            else:
+                logger.info("✅ Колонок api_key уже существует")
+        except Exception as migration_error:
+            logger.warning(f"⚠️ Миграция api_key: {migration_error}")
+            db.rollback()
+        finally:
+            db.close()
+        
         logger.info("✅ БД инициализирована успешно!")
     except Exception as e:
         logger.error(f"❌ Ошибка при инициализации БД: {e}")
@@ -456,7 +496,6 @@ async def login(email: str = Form(...), password: str = Form(...), db: Session =
             detail="Invalid email or password"
         )
     
-    # Генерируем новый session token
     session_token = generate_session_token()
     user.session_token = session_token
     db.commit()
@@ -472,6 +511,28 @@ async def login(email: str = Form(...), password: str = Form(...), db: Session =
         "plan": user.plan
     }
 
+@app.post("/api/generate-api-key")
+async def generate_api_key_endpoint(session_token: str = Header(..., alias="X-Session-Token"), db: Session = Depends(get_db)):
+    """Генерирует API ключ для пользователя"""
+    
+    user = get_user_by_session_token(session_token, db)
+    
+    if user.api_key:
+        logger.info(f"⚠️ API key already exists for {user.email}, regenerating")
+    
+    user.api_key = generate_api_key()
+    db.commit()
+    db.refresh(user)
+    
+    logger.info(f"✅ API key generated for {user.email}")
+    
+    return {
+        "status": "ok",
+        "message": "API key generated",
+        "api_key": user.api_key,
+        "warning": "Keep your API key safe. It provides paid access to the API."
+    }
+
 @app.get("/api/me")
 async def get_me(session_token: str = Header(..., alias="X-Session-Token"), db: Session = Depends(get_db)):
     """Получает информацию о текущем юзере"""
@@ -479,15 +540,21 @@ async def get_me(session_token: str = Header(..., alias="X-Session-Token"), db: 
     user = get_user_by_session_token(session_token, db)
     check_reset_date(user, db)
     
-    plan_config = PLAN_PRICES[user.plan]
+    # Для free плана: requests_remaining считаем через balance
+    if user.plan == "free":
+        requests_remaining = int(user.balance / PLAN_PRICES["free"]["cost_per_request"])
+        requests_used = PLAN_PRICES["free"]["limit"] - requests_remaining
+    else:
+        requests_used = user.used
+        requests_remaining = max(0, user.limit - user.used)
     
     return {
         "status": "ok",
         "email": user.email,
         "plan": user.plan,
-        "requests_used": user.used,
+        "requests_used": requests_used,
         "requests_limit": user.limit,
-        "requests_remaining": max(0, user.limit - user.used),
+        "requests_remaining": requests_remaining,
         "balance": round(user.balance, 2),
         "subscription_active": user.subscription_active,
         "created_at": user.created_at.isoformat()
@@ -500,16 +567,32 @@ async def get_me(session_token: str = Header(..., alias="X-Session-Token"), db: 
 async def detect_damage(
     request: Request,
     file: UploadFile = File(...),
-    session_token: str = Header(..., alias="X-Session-Token"),
+    session_token: str = Header(None, alias="X-Session-Token"),
+    api_key: str = Header(None, alias="X-API-Key"),
     db: Session = Depends(get_db)
 ):
-    """Detects car damage from image"""
+    """Detects car damage from image
+    
+    Supports two auth methods:
+    - X-Session-Token: Web UI (limit - used counter)
+    - X-API-Key: API access ($0.15 per request)
+    """
     
     if not model:
         raise HTTPException(status_code=503, detail="Model not loaded")
     
-    # === GET USER ===
-    user = get_user_by_session_token(session_token, db)
+    # === GET USER & DETERMINE AUTH TYPE ===
+    auth_type = None
+    user = None
+    
+    if session_token:
+        user = get_user_by_session_token(session_token, db)
+        auth_type = "web"
+    elif api_key:
+        user = get_user_by_api_key(api_key, db)
+        auth_type = "api"
+    else:
+        raise HTTPException(status_code=401, detail="X-Session-Token or X-API-Key required")
     
     # === CHECK RESET DATE ===
     check_reset_date(user, db)
@@ -517,33 +600,42 @@ async def detect_damage(
     # === BILLING LOGIC ===
     plan_config = PLAN_PRICES[user.plan]
     
-    if user.plan == "free":
-        # Free: balance-based ($0.15 per request)
-        cost = plan_config["cost_per_request"]
+    if auth_type == "api":
+        # API KEY: always paid model ($0.15 per request)
+        cost_per_request = 0.15
         
-        if user.balance < cost:
+        if user.balance < cost_per_request:
             raise HTTPException(
                 status_code=402,
-                detail=f"Insufficient balance. Need ${cost:.2f}, have ${user.balance:.2f}"
+                detail=f"Insufficient balance. Need ${cost_per_request:.2f}, have ${user.balance:.2f}"
             )
         
-        user.balance -= cost
+        user.balance -= cost_per_request
+        logger.info(f"API request from {user.email}, balance: ${user.balance:.2f}")
     
-    elif user.plan in ["starter", "pro"]:
-        # Subscription: check if active
-        if not user.subscription_active:
-            raise HTTPException(
-                status_code=402,
-                detail="Subscription not active. Please renew your subscription."
-            )
+    else:  # auth_type == "web"
+        # WEB UI: use limit - used counter
+        if user.plan == "free":
+            if user.used >= user.limit:
+                raise HTTPException(
+                    status_code=402,
+                    detail=f"Monthly limit exceeded. {user.limit} analyses per month."
+                )
+            user.used += 1
         
-        # Check limit
-        if user.used >= user.limit:
-            # Лимит кончился → платит за избыток
-            overage_cost = plan_config["cost_per_request"]
-            user.overage_charges += overage_cost
-        
-        user.used += 1
+        elif user.plan in ["starter", "pro"]:
+            if not user.subscription_active:
+                raise HTTPException(
+                    status_code=402,
+                    detail="Subscription not active. Please renew your subscription."
+                )
+            
+            if user.used >= user.limit:
+                overage_cost = plan_config["cost_per_request"]
+                user.overage_charges += overage_cost
+                logger.warning(f"Overage for {user.email}: ${overage_cost:.2f}")
+            
+            user.used += 1
     
     db.commit()
     
@@ -586,16 +678,25 @@ async def detect_damage(
         raise HTTPException(status_code=500, detail="Detection failed")
     
     # === RESPONSE ===
-    return {
+    response = {
         "status": "ok",
         "detections": detections,
         "count": len(detections),
         "plan": user.plan,
-        "balance_remaining": round(user.balance, 2) if user.plan == "free" else None,
-        "requests_used": user.used if user.plan != "free" else None,
-        "requests_remaining": (user.limit - user.used) if user.plan != "free" and user.used < user.limit else 0,
-        "overage_charges": round(user.overage_charges, 2) if user.plan != "free" else None
+        "auth_type": auth_type
     }
+    
+    # Add billing info based on auth type
+    if auth_type == "api":
+        response["balance_remaining"] = round(user.balance, 2)
+        response["cost_per_request"] = 0.15
+    else:  # web
+        response["requests_used"] = user.used
+        response["requests_limit"] = user.limit
+        response["requests_remaining"] = max(0, user.limit - user.used)
+        response["overage_charges"] = round(user.overage_charges, 2) if user.plan != "free" else None
+    
+    return response
 
 # ==================== SUBSCRIPTION MANAGEMENT ====================
 
