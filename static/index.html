@@ -10,6 +10,7 @@
     <style>
         .modal-hidden { display: none; }
         .modal-visible { display: flex; }
+        code { font-family: 'Courier New', monospace; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -56,29 +57,27 @@
     <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-blue-600">🚗 KastikCars</h1>
         <nav class="space-x-6">
-            <a href="#pricing" class="hover:text-blue-600">Pricing</a>
             <a href="#examples" class="hover:text-blue-600">Примеры</a>
+            <a href="#pricing" class="hover:text-blue-600">Pricing</a>
             <a href="#faq" class="hover:text-blue-600">FAQ</a>
         </nav>
-        <div id="authSection">
-            <button   
-                onclick="selectPlan('free'); openRegisterModal()"  
-                class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700"  
-            >
-                Зарегистрироваться
-            </button>
+        <div id="userInfo" class="hidden flex items-center gap-4">
+            <div class="text-sm">
+                <p id="userName" class="font-bold"></p>
+                <p id="userEmail" class="text-gray-600"></p>
+            </div>
+            <button onclick="logout()" class="text-red-600 hover:text-red-700 font-bold">Выход</button>
         </div>
-        <div id="userSection" class="hidden space-x-4">
-            <span id="userEmail" class="text-gray-600"></span>
-            <button onclick="logout()" class="text-red-600 font-bold hover:underline">Выход</button>
-        </div>
+        <button id="registerBtn" onclick="selectPlan('free'); openRegisterModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Зарегистрироваться
+        </button>
     </div>
 </header>
 
 <!-- LOGO SECTION -->
 <section class="bg-white border-b py-8">
     <div class="max-w-6xl mx-auto px-4 text-center">
-        <img src="/static/logo.png" alt="KastikCars Logo" class="h-16 mx-auto">
+        <img src="/static/logo.png" alt="KastikCars Logo" class="h-32 mx-auto">
     </div>
 </section>
 
@@ -96,9 +95,11 @@
     </div>
 </section>
 
-<!-- DEMO SECTION (только после регистрации) -->
-<section id="demoSection" class="hidden py-16 bg-white">
+<!-- DEMO SECTION -->
+<section id="demo" class="py-16 bg-white hidden">
     <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center">Анализ повреждений</h2>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Загрузка фото -->
             <div class="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center bg-blue-50">
@@ -117,9 +118,17 @@
                 <p class="text-gray-600 text-sm mt-4">PNG, JPG, WebP до 10MB</p>
             </div>
 
-            <!-- Результаты -->
+            <!-- Изображение и результаты -->
             <div class="border rounded-lg p-8 bg-gray-50">
-                <h3 class="text-lg font-bold mb-4">Найденные повреждения</h3>
+                <h3 class="text-lg font-bold mb-4">Результат анализа</h3>
+                
+                <div id="imageContainer" class="mb-4 hidden">
+                    <div class="relative inline-block w-full">
+                        <img id="uploadedImage" src="" alt="Загруженное фото" class="w-full rounded">
+                        <canvas id="boundingBoxCanvas" class="absolute top-0 left-0 w-full h-full rounded"></canvas>
+                    </div>
+                </div>
+                
                 <div id="resultsContainer" class="text-gray-500">
                     Загрузи фото для анализа
                 </div>
@@ -128,6 +137,53 @@
 
         <!-- Статус API -->
         <div id="apiStatus" class="mt-8 text-center text-sm text-gray-600"></div>
+    </div>
+</section>
+
+<!-- EXAMPLES SECTION -->
+<section id="examples" class="py-16 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center">Примеры использования API</h2>
+        
+        <div class="space-y-8">
+            <!-- cURL -->
+            <div>
+                <h3 class="text-xl font-bold mb-4">cURL</h3>
+                <pre><code class="language-bash">curl -X POST \
+  https://car-damage-api.com/api/detect \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -F "file=@photo.jpg"</code></pre>
+            </div>
+
+            <!-- Python -->
+            <div>
+                <h3 class="text-xl font-bold mb-4">Python</h3>
+                <pre><code class="language-python">import requests
+
+with open('photo.jpg', 'rb') as f:
+    r = requests.post(
+        'https://car-damage-api.com/api/detect',
+        headers={'X-API-Key': 'YOUR_API_KEY'},
+        files={'file': f}
+    )
+    print(r.json())</code></pre>
+            </div>
+
+            <!-- JavaScript -->
+            <div>
+                <h3 class="text-xl font-bold mb-4">JavaScript</h3>
+                <pre><code class="language-javascript">const formData = new FormData();
+formData.append('file', fileInput.files[0]);
+
+fetch('https://car-damage-api.com/api/detect', {
+    method: 'POST',
+    headers: {'X-API-Key': 'YOUR_API_KEY'},
+    body: formData
+})
+.then(r => r.json())
+.then(data => console.log(data))</code></pre>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -145,7 +201,7 @@
                 <ul class="space-y-3 mb-8">
                     <li class="flex items-center gap-2">
                         <span class="text-green-600">✓</span>
-                        <span>10 анализов/месяц</span>
+                        <span>$1.00 баланс</span>
                     </li>
                     <li class="flex items-center gap-2">
                         <span class="text-green-600">✓</span>
@@ -225,55 +281,8 @@
     </div>
 </section>
 
-<!-- API EXAMPLES -->
-<section id="examples" class="py-16 bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-12 text-center">Примеры кода</h2>
-        
-        <div class="space-y-12 max-w-4xl mx-auto">
-            <!-- cURL -->
-            <div>
-                <h3 class="text-2xl font-bold mb-4">cURL</h3>
-                <pre><code class="language-bash">curl -X POST \
-  https://car-damage-api.com/api/detect \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -F "file=@photo.jpg"</code></pre>
-            </div>
-
-            <!-- Python -->
-            <div>
-                <h3 class="text-2xl font-bold mb-4">Python</h3>
-                <pre><code class="language-python">import requests
-
-with open('photo.jpg', 'rb') as f:
-    r = requests.post(
-        'https://car-damage-api.com/api/detect',
-        headers={'X-API-Key': 'YOUR_API_KEY'},
-        files={'file': f}
-    )
-    print(r.json())</code></pre>
-            </div>
-
-            <!-- JavaScript -->
-            <div>
-                <h3 class="text-2xl font-bold mb-4">JavaScript</h3>
-                <pre><code class="language-javascript">const formData = new FormData();
-formData.append('file', fileInput.files[0]);
-
-fetch('https://car-damage-api.com/api/detect', {
-    method: 'POST',
-    headers: {'X-API-Key': 'YOUR_API_KEY'},
-    body: formData
-})
-.then(r => r.json())
-.then(data => console.log(data))</code></pre>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- FAQ -->
-<section id="faq" class="py-16 bg-white">
+<section id="faq" class="py-16 bg-gray-50">
     <div class="max-w-6xl mx-auto px-4">
         <h2 class="text-3xl font-bold mb-12 text-center">Частые вопросы</h2>
         
@@ -310,6 +319,8 @@ fetch('https://car-damage-api.com/api/detect', {
 </footer>
 
 <script>
+hljs.highlightAll();
+
 // ==================== МОДАЛЬ РЕГИСТРАЦИИ ====================
 
 let selectedPlan = 'free';
@@ -342,7 +353,6 @@ async function registerUser() {
     const errorDiv = document.getElementById('registerError');
     errorDiv.textContent = '';
 
-    // Валидация
     if (!email) {
         errorDiv.textContent = '❌ Введи email';
         return;
@@ -354,7 +364,6 @@ async function registerUser() {
     }
 
     try {
-        // Отправляем запрос на регистрацию
         const response = await fetch('/api/register?email=' + encodeURIComponent(email), {
             method: 'POST'
         });
@@ -366,18 +375,12 @@ async function registerUser() {
             return;
         }
 
-        // Сохраняем API key в localStorage
         localStorage.setItem('apiKey', data.api_key);
         localStorage.setItem('userEmail', email);
         localStorage.setItem('userPlan', selectedPlan);
 
-        // Закрываем модаль
         closeRegisterModal();
-
-        // Показываем демо
         showDemo();
-
-        // Очищаем форму
         document.getElementById('emailInput').value = '';
 
     } catch (error) {
@@ -385,14 +388,22 @@ async function registerUser() {
     }
 }
 
+function logout() {
+    localStorage.removeItem('apiKey');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userPlan');
+    location.reload();
+}
+
 // ==================== ДЕМО ====================
 
 function showDemo() {
-    document.getElementById('authSection').classList.add('hidden');
-    document.getElementById('userSection').classList.remove('hidden');
-    document.getElementById('demoSection').classList.remove('hidden');
+    document.getElementById('demo').classList.remove('hidden');
+    document.getElementById('registerBtn').classList.add('hidden');
+    document.getElementById('userInfo').classList.remove('hidden');
     
     const email = localStorage.getItem('userEmail');
+    document.getElementById('userName').textContent = email.split('@')[0];
     document.getElementById('userEmail').textContent = email;
     
     const apiKey = localStorage.getItem('apiKey');
@@ -400,16 +411,6 @@ function showDemo() {
         ✅ Вы вошли как: <strong>${email}</strong><br>
         API Key: <code>${apiKey.substring(0, 10)}...</code>
     `;
-}
-
-function logout() {
-    localStorage.removeItem('apiKey');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userPlan');
-    
-    document.getElementById('authSection').classList.remove('hidden');
-    document.getElementById('userSection').classList.add('hidden');
-    document.getElementById('demoSection').classList.add('hidden');
 }
 
 function checkLoggedIn() {
@@ -430,6 +431,14 @@ document.getElementById('photoInput')?.addEventListener('change', async (e) => {
         alert('Сначала зарегистрируйся!');
         return;
     }
+
+    // Показываем загруженное изображение
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        document.getElementById('uploadedImage').src = event.target.result;
+        document.getElementById('imageContainer').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
 
     // Формируем FormData
     const formData = new FormData();
@@ -454,6 +463,9 @@ document.getElementById('photoInput')?.addEventListener('change', async (e) => {
             return;
         }
 
+        // Рисуем bounding boxes
+        drawBoundingBoxes(data.detections);
+
         // Показываем результаты
         if (data.detections.length === 0) {
             resultsDiv.innerHTML = '<p class="text-green-600">✅ Повреждений не найдено</p>';
@@ -474,27 +486,60 @@ document.getElementById('photoInput')?.addEventListener('change', async (e) => {
             resultsDiv.innerHTML = html;
         }
 
-        // Обновляем статус использования
-        if (data.plan === 'free') {
-            document.getElementById('apiStatus').innerHTML += `<br>Баланс: $${data.balance_remaining}`;
-        } else {
-            document.getElementById('apiStatus').innerHTML += `<br>Использовано: ${data.requests_used}/${data.requests_limit}`;
-        }
-
     } catch (error) {
         resultsDiv.innerHTML = `<p class="text-red-600">❌ Ошибка: ${error.message}</p>`;
     }
 });
 
-// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+// ==================== РИСОВАНИЕ BOUNDING BOXES ====================
 
-// Подсвечиваем код при загрузке
-window.addEventListener('load', () => {
-    checkLoggedIn();
-    document.querySelectorAll('pre code').forEach((block) => {
-        hljs.highlightElement(block);
-    });
-});
+function drawBoundingBoxes(detections) {
+    const canvas = document.getElementById('boundingBoxCanvas');
+    const img = document.getElementById('uploadedImage');
+    
+    if (!img.complete) {
+        img.onload = () => drawBoxes();
+    } else {
+        drawBoxes();
+    }
+
+    function drawBoxes() {
+        canvas.width = img.offsetWidth;
+        canvas.height = img.offsetHeight;
+        const ctx = canvas.getContext('2d');
+
+        const scaleX = canvas.width / img.naturalWidth;
+        const scaleY = canvas.height / img.naturalHeight;
+
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
+
+        detections.forEach((det, i) => {
+            const x = det.bbox[0] * scaleX;
+            const y = det.bbox[1] * scaleY;
+            const w = (det.bbox[2] - det.bbox[0]) * scaleX;
+            const h = (det.bbox[3] - det.bbox[1]) * scaleY;
+
+            const color = colors[i % colors.length];
+
+            // Рисуем прямоугольник
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, w, h);
+
+            // Рисуем фон для текста
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y - 25, w, 25);
+
+            // Рисуем текст
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText(`${det.class} (${(det.confidence * 100).toFixed(0)}%)`, x + 5, y - 8);
+        });
+    }
+}
+
+// Проверяем при загрузке страницы
+window.addEventListener('load', checkLoggedIn);
 </script>
 
 </body>
