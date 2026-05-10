@@ -330,7 +330,6 @@ async def health(request: Request):
     }
 
 @app.post("/api/detect")
-@limiter.limit("100/minute")
 async def detect_damage(
     request: Request,
     file: UploadFile = File(...),
