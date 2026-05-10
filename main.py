@@ -14,11 +14,12 @@ import numpy as np
 from datetime import datetime, timedelta
 import logging
 import os
+import secrets
+from passlib.context import CryptContext
 
 # ==================== DATABASE ====================
 from sqlalchemy import create_engine, Column, String, Integer, Float, DateTime, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
-import secrets
 
 # Database Setup
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -42,27 +43,28 @@ class User(Base):
     
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, index=True)
-    api_key = Column(String, unique=True, index=True)
+    password_hash = Column(String)
+    session_token = Column(String, unique=True, index=True, nullable=True)
     
     # Subscription data
     plan = Column(String, default="free")  # free, starter, pro
-    limit = Column(Integer, default=0)  # 0 (pay-per-use), 1000, 10000
+    limit = Column(Integer, default=10)  # 10 (free), 1000, 10000
     used = Column(Integer, default=0)  # счётчик в текущем месяце
     
-    # Pay-per-use для Free юзеров
-    balance = Column(Float, default=0)  # баланс в $
+    # Balance для всех плана (free обновляется ежемесячно, starter/pro требуют оплату)
+    balance = Column(Float, default=1.50)  # $1.50 = 10 запросов для free
     
     # Overage для Starter/Pro
     overage_charges = Column(Float, default=0)  # переплата сверх лимита
     
-    # Subscription management (NEW)
+    # Subscription management
     subscription_active = Column(Boolean, default=False)
     subscription_started_at = Column(DateTime, nullable=True)
     subscription_ended_at = Column(DateTime, nullable=True)
     cancelled_at = Column(DateTime, nullable=True)
     
     # Reset info
-    reset_date = Column(DateTime)  # когда сбросить used → 0
+    reset_date = Column(DateTime)  # когда сбросить used → 0 и balance
     created_at = Column(DateTime, default=datetime.utcnow)
 
 # ==================== FASTAPI SETUP ====================
@@ -96,12 +98,16 @@ if STATIC_DIR.exists():
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 # ==================== PLAN CONFIGURATION ====================
 PLAN_PRICES = {
     "free": {
         "monthly_cost": 0,
-        "limit": 0,  # unlimited (pay-per-use)
-        "cost_per_request": 0.15
+        "limit": 10,  # 10 запросов в месяц
+        "cost_per_request": 0.15,
+        "monthly_balance": 1.50  # $1.50 = 10 запросов
     },
     "starter": {
         "monthly_cost": 29,
@@ -152,22 +158,35 @@ def get_db():
     finally:
         db.close()
 
-def generate_api_key():
-    """Генерирует уникальный API key"""
-    return f"sk_{secrets.token_urlsafe(24)}"
+def generate_session_token():
+    """Генерирует уникальный session token"""
+    return f"sess_{secrets.token_urlsafe(32)}"
+
+def hash_password(password: str) -> str:
+    """Хэширует пароль"""
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, password_hash: str) -> bool:
+    """Проверяет пароль"""
+    return pwd_context.verify(plain_password, password_hash)
 
 def check_reset_date(user: User, db: Session):
-    """Проверяет нужно ли сбросить счётчик"""
+    """Проверяет нужно ли сбросить счётчик и balance"""
     if user.reset_date is None or datetime.utcnow() >= user.reset_date:
         user.used = 0
+        
+        # Обновляем balance для free плана
+        if user.plan == "free":
+            user.balance = PLAN_PRICES["free"]["monthly_balance"]
+        
         user.reset_date = datetime.utcnow() + timedelta(days=30)
         db.commit()
 
-def get_user_by_api_key(api_key: str, db: Session):
-    """Получает юзера по API key"""
-    user = db.query(User).filter(User.api_key == api_key).first()
+def get_user_by_session_token(token: str, db: Session):
+    """Получает юзера по session token"""
+    user = db.query(User).filter(User.session_token == token).first()
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid API key")
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
     return user
 
 # ==================== STARTUP EVENT ====================
@@ -214,6 +233,129 @@ async def models_info():
         "avg_response_time": "1.2s"
     }
 
+# ==================== AUTH ENDPOINTS ====================
+
+@app.post("/api/register")
+async def register(email: str, password: str, db: Session = Depends(get_db)):
+    """
+    Регистрирует нового юзера с plan=free
+    """
+    
+    # Проверяем дубликат
+    existing = db.query(User).filter(User.email == email).first()
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"User with email {email} already registered"
+        )
+    
+    # Хэшируем пароль
+    password_hash = hash_password(password)
+    session_token = generate_session_token()
+    
+    # Создаём юзера с plan=free
+    user = User(
+        email=email,
+        password_hash=password_hash,
+        session_token=session_token,
+        plan="free",
+        limit=10,
+        balance=1.50,
+        subscription_active=False,
+        reset_date=datetime.utcnow() + timedelta(days=30),
+        created_at=datetime.utcnow()
+    )
+    
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    
+    logger.info(f"✅ User registered: {email}")
+    
+    return {
+        "status": "ok",
+        "message": "Registration successful",
+        "email": email,
+        "session_token": session_token,
+        "plan": "free"
+    }
+
+@app.post("/api/login")
+async def login(email: str, password: str, db: Session = Depends(get_db)):
+    """
+    Логин по email и пароль
+    """
+    
+    user = db.query(User).filter(User.email == email).first()
+    
+    if not user or not verify_password(password, user.password_hash):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
+    
+    # Генерируем новый session token
+    session_token = generate_session_token()
+    user.session_token = session_token
+    db.commit()
+    db.refresh(user)
+    
+    logger.info(f"✅ User logged in: {email}")
+    
+    return {
+        "status": "ok",
+        "message": "Login successful",
+        "email": email,
+        "session_token": session_token,
+        "plan": user.plan
+    }
+
+@app.post("/api/logout")
+async def logout(
+    session_token: str = Header(..., alias="Authorization"),
+    db: Session = Depends(get_db)
+):
+    """
+    Выход (очищаем session token)
+    """
+    
+    user = get_user_by_session_token(session_token, db)
+    user.session_token = None
+    db.commit()
+    
+    logger.info(f"✅ User logged out: {user.email}")
+    
+    return {
+        "status": "ok",
+        "message": "Logged out"
+    }
+
+@app.get("/api/me")
+async def get_me(
+    session_token: str = Header(..., alias="Authorization"),
+    db: Session = Depends(get_db)
+):
+    """
+    Информация о текущем юзере
+    """
+    
+    user = get_user_by_session_token(session_token, db)
+    check_reset_date(user, db)
+    
+    plan_config = PLAN_PRICES[user.plan]
+    
+    return {
+        "email": user.email,
+        "plan": user.plan,
+        "limit": user.limit,
+        "used": user.used,
+        "balance": round(user.balance, 2),
+        "requests_remaining": max(0, user.limit - user.used),
+        "monthly_cost": plan_config["monthly_cost"],
+        "subscription_active": user.subscription_active,
+        "reset_date": user.reset_date.isoformat()
+    }
+
 # ==================== DETECTION ENDPOINT ====================
 
 @app.post("/api/detect")
@@ -221,14 +363,14 @@ async def models_info():
 async def detect_damage(
     request: Request,
     file: UploadFile = File(...),
-    api_key: str = Header(..., alias="X-API-Key"),
+    session_token: str = Header(..., alias="Authorization"),
     db: Session = Depends(get_db)
 ):
     """
     Detects car damage from image.
     
     Billing logic:
-    - Free: pay-per-use ($0.15 per request)
+    - Free: balance-based ($1.50/month = 10 requests)
     - Starter: subscription ($29/month = 1000 requests) + overage ($0.05 each)
     - Pro: subscription ($99/month = 10000 requests) + overage ($0.02 each)
     """
@@ -237,7 +379,7 @@ async def detect_damage(
         raise HTTPException(status_code=503, detail="Model not loaded")
     
     # === GET USER ===
-    user = get_user_by_api_key(api_key, db)
+    user = get_user_by_session_token(session_token, db)
     
     # === CHECK RESET DATE ===
     check_reset_date(user, db)
@@ -246,18 +388,25 @@ async def detect_damage(
     plan_config = PLAN_PRICES[user.plan]
     
     if user.plan == "free":
-        # Free: pay-per-use
+        # Free: balance-based
         cost = plan_config["cost_per_request"]  # $0.15
         
         if user.balance < cost:
             raise HTTPException(
                 status_code=402,
-                detail=f"Insufficient balance. Need ${cost:.2f}, have ${user.balance:.2f}"
+                detail=f"Insufficient balance. Need ${cost:.2f}, have ${user.balance:.2f}. Next reset: {user.reset_date.isoformat()}"
             )
         
         user.balance -= cost
     
     elif user.plan in ["starter", "pro"]:
+        # Subscription требует активной подписки
+        if not user.subscription_active:
+            raise HTTPException(
+                status_code=402,
+                detail="Subscription inactive. Please renew your subscription."
+            )
+        
         # Subscription + overage
         if user.used >= user.limit:
             # Лимит кончился → платит за избыток
@@ -312,59 +461,12 @@ async def detect_damage(
         "overage_charges": round(user.overage_charges, 2) if user.plan != "free" else None
     }
 
-# ==================== REGISTRATION ====================
-
-@app.post("/api/register")
-async def register(email: str, db: Session = Depends(get_db)):
-    """
-    Регистрирует нового юзера с plan=free
-    Генерирует API key и отправляет на email (позже)
-    """
-    
-    # Проверяем дубликат
-    existing = db.query(User).filter(User.email == email).first()
-    if existing:
-        raise HTTPException(
-            status_code=400,
-            detail=f"User with email {email} already registered"
-        )
-    
-    # Генерируем API key
-    api_key = generate_api_key()
-    
-    # Создаём юзера с plan=free
-    user = User(
-        email=email,
-        api_key=api_key,
-        plan="free",
-        limit=0,  # pay-per-use
-        balance=1.00,  # стартовый баланс $1.00 для тестирования (~6 анализов)
-        subscription_active=False,
-        reset_date=datetime.utcnow() + timedelta(days=30),
-        created_at=datetime.utcnow()
-    )
-    
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    
-    logger.info(f"✅ User registered: {email}")
-    
-    return {
-        "status": "ok",
-        "message": "Registration successful",
-        "email": email,
-        "api_key": api_key,
-        "plan": "free",
-        "note": "API key has been sent to your email (TODO: implement email)"
-    }
-
 # ==================== SUBSCRIPTION MANAGEMENT ====================
 
-@app.post("/api/upgrade/{api_key}")
+@app.post("/api/upgrade")
 async def upgrade_plan(
-    api_key: str,
     new_plan: str,
+    session_token: str = Header(..., alias="Authorization"),
     db: Session = Depends(get_db)
 ):
     """
@@ -372,7 +474,7 @@ async def upgrade_plan(
     Usually called after successful payment
     """
     
-    user = get_user_by_api_key(api_key, db)
+    user = get_user_by_session_token(session_token, db)
     
     # Plan hierarchy
     PLAN_ORDER = {"free": 0, "starter": 1, "pro": 2}
@@ -381,7 +483,7 @@ async def upgrade_plan(
     if PLAN_ORDER.get(new_plan, 0) <= PLAN_ORDER.get(user.plan, 0):
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot upgrade from {user.plan} to {new_plan}. Use downgrade endpoint instead."
+            detail=f"Cannot upgrade from {user.plan} to {new_plan}."
         )
     
     plan_config = PLAN_PRICES[new_plan]
@@ -410,10 +512,10 @@ async def upgrade_plan(
         "next_reset": user.reset_date.isoformat()
     }
 
-@app.post("/api/downgrade/{api_key}")
+@app.post("/api/downgrade")
 async def downgrade_plan(
-    api_key: str,
     new_plan: str,
+    session_token: str = Header(..., alias="Authorization"),
     db: Session = Depends(get_db)
 ):
     """
@@ -421,7 +523,7 @@ async def downgrade_plan(
     Downgrade is effective immediately, no refund
     """
     
-    user = get_user_by_api_key(api_key, db)
+    user = get_user_by_session_token(session_token, db)
     
     # Plan hierarchy
     PLAN_ORDER = {"free": 0, "starter": 1, "pro": 2}
@@ -430,7 +532,7 @@ async def downgrade_plan(
     if PLAN_ORDER.get(new_plan, 0) >= PLAN_ORDER.get(user.plan, 0):
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot downgrade from {user.plan} to {new_plan}. Use upgrade endpoint instead."
+            detail=f"Cannot downgrade from {user.plan} to {new_plan}."
         )
     
     plan_config = PLAN_PRICES[new_plan]
@@ -439,11 +541,14 @@ async def downgrade_plan(
     user.plan = new_plan
     user.limit = plan_config["limit"]
     user.used = 0  # ← RESET счётчика
-    user.overage_charges = 0  # ← ОЧИСТКА overage (НЕ рефундим)
+    user.overage_charges = 0  # ← ОЧИСТКА overage
     user.subscription_active = (new_plan != "free")
     user.subscription_started_at = datetime.utcnow()
     user.subscription_ended_at = datetime.utcnow() + timedelta(days=30) if new_plan != "free" else None
     user.reset_date = datetime.utcnow() + timedelta(days=30)
+    
+    if new_plan == "free":
+        user.balance = PLAN_PRICES["free"]["monthly_balance"]
     
     db.commit()
     db.refresh(user)
@@ -459,9 +564,9 @@ async def downgrade_plan(
         "next_reset": user.reset_date.isoformat()
     }
 
-@app.post("/api/cancel-subscription/{api_key}")
+@app.post("/api/cancel-subscription")
 async def cancel_subscription(
-    api_key: str,
+    session_token: str = Header(..., alias="Authorization"),
     db: Session = Depends(get_db)
 ):
     """
@@ -470,7 +575,7 @@ async def cancel_subscription(
     No refund for current billing period.
     """
     
-    user = get_user_by_api_key(api_key, db)
+    user = get_user_by_session_token(session_token, db)
     
     if user.plan == "free":
         raise HTTPException(
@@ -480,13 +585,13 @@ async def cancel_subscription(
     
     # Downgrade to free
     user.plan = "free"
-    user.limit = 0  # pay-per-use
+    user.limit = 10
     user.used = 0
-    user.balance = 0  # очищаем баланс (или можно дать refund)
+    user.balance = PLAN_PRICES["free"]["monthly_balance"]
     user.overage_charges = 0
     user.subscription_active = False
     user.cancelled_at = datetime.utcnow()
-    user.subscription_ended_at = datetime.utcnow()  # Действует сразу же
+    user.subscription_ended_at = datetime.utcnow()
     user.reset_date = datetime.utcnow() + timedelta(days=30)
     
     db.commit()
@@ -504,18 +609,16 @@ async def cancel_subscription(
 
 # ==================== STATUS & USAGE ====================
 
-@app.get("/api/usage/{api_key}")
+@app.get("/api/usage")
 async def get_usage(
-    api_key: str,
+    session_token: str = Header(..., alias="Authorization"),
     db: Session = Depends(get_db)
 ):
     """
     Показывает текущее использование и charges
     """
     
-    user = get_user_by_api_key(api_key, db)
-    
-    # Проверяем нужно ли сбросить счётчик
+    user = get_user_by_session_token(session_token, db)
     check_reset_date(user, db)
     
     plan_config = PLAN_PRICES[user.plan]
@@ -525,7 +628,8 @@ async def get_usage(
             "plan": "free",
             "balance": round(user.balance, 2),
             "cost_per_request": plan_config["cost_per_request"],
-            "created_at": user.created_at.isoformat()
+            "requests_remaining": round(user.balance / plan_config["cost_per_request"]),
+            "reset_date": user.reset_date.isoformat()
         }
     else:
         monthly_charge = plan_config["monthly_cost"]
@@ -546,16 +650,16 @@ async def get_usage(
             "reset_date": user.reset_date.isoformat()
         }
 
-@app.get("/api/subscription/{api_key}")
+@app.get("/api/subscription")
 async def get_subscription(
-    api_key: str,
+    session_token: str = Header(..., alias="Authorization"),
     db: Session = Depends(get_db)
 ):
     """
     Показывает статус подписки
     """
     
-    user = get_user_by_api_key(api_key, db)
+    user = get_user_by_session_token(session_token, db)
     plan_config = PLAN_PRICES[user.plan]
     
     return {

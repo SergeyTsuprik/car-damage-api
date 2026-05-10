@@ -54,43 +54,185 @@
 
         .nav-right {
             display: flex;
+            align-items: center;
             gap: 1rem;
         }
 
-        .login-btn {
+        .user-email {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
             background: #5b7cfa;
             color: white;
-            padding: 0.5rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
             font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: #4c6ef5;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #5b7cfa;
+            border: 1px solid #5b7cfa;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f4ff;
+        }
+
+        .btn-logout {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-logout:hover {
+            background: #ee5a52;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
             transition: all 0.3s;
         }
 
-        .login-btn:hover {
+        .tab.active {
+            color: #5b7cfa;
+            border-bottom-color: #5b7cfa;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #5b7cfa;
+            box-shadow: 0 0 0 3px rgba(91, 124, 250, 0.1);
+        }
+
+        .form-error {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background: #5b7cfa;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .form-submit:hover {
             background: #4c6ef5;
         }
 
-        .logout-btn {
-            background: transparent;
-            color: #333;
-            padding: 0.5rem 1.5rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            border-color: #5b7cfa;
-            color: #5b7cfa;
-        }
-
-        .user-info {
-            color: #333;
-            font-weight: 500;
+        .form-submit:disabled {
+            background: #999;
+            cursor: not-allowed;
         }
 
         .logo-section {
@@ -139,36 +281,13 @@
             justify-content: center;
         }
 
-        .btn {
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
+        .hero .btn-primary {
             background: white;
             color: #667eea;
-            font-weight: 600;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid white;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .hero .btn-secondary {
+            border-color: white;
             color: white;
         }
 
@@ -180,13 +299,32 @@
             display: none;
         }
 
-        .demo-section.authorized {
+        .demo-section.visible {
             display: block;
         }
 
         .demo-section h2 {
             margin-bottom: 2rem;
             text-align: center;
+        }
+
+        .demo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .requests-info {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .requests-info strong {
+            color: #5b7cfa;
+            font-size: 1.1rem;
         }
 
         .upload-area {
@@ -319,6 +457,10 @@
             border-radius: 8px;
             margin-top: 2rem;
             display: none;
+        }
+
+        .legend.visible {
+            display: block;
         }
 
         .legend h3 {
@@ -527,164 +669,7 @@
             display: none;
         }
 
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            animation: slideIn 0.3s;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .modal-close:hover {
-            color: #333;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 0.75rem 0;
-            cursor: pointer;
-            font-weight: 600;
-            color: #999;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
-            color: #5b7cfa;
-            border-bottom-color: #5b7cfa;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #5b7cfa;
-        }
-
-        .form-submit {
-            width: 100%;
-            padding: 0.75rem;
-            background: #5b7cfa;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .form-submit:hover {
-            background: #4c6ef5;
-        }
-
-        .form-message {
-            margin-top: 1rem;
-            padding: 0.75rem;
-            border-radius: 6px;
-            display: none;
-            font-size: 0.9rem;
-        }
-
-        .form-message.error {
-            background: #fee;
-            color: #c33;
-            display: block;
-        }
-
-        .form-message.success {
-            background: #efe;
-            color: #3c3;
+        .error-message.visible {
             display: block;
         }
     </style>
@@ -692,18 +677,69 @@
 <body>
     <header>
         <nav>
-            <ul class="nav-left">
-                <li><a onclick="scrollToSection('demo')">Demo</a></li>
-                <li><a onclick="scrollToSection('pricing')">Pricing</a></li>
-                <li><a onclick="scrollToSection('faq')">FAQ</a></li>
-            </ul>
+            <div class="nav-left">
+                <a onclick="scrollToSection('demo')">Demo</a>
+                <a onclick="scrollToSection('pricing')">Pricing</a>
+                <a onclick="scrollToSection('faq')">FAQ</a>
+            </div>
             <div class="nav-right">
-                <span class="user-info" id="userInfo" style="display:none;"></span>
-                <button class="login-btn" id="loginBtn" onclick="openAuthModal()">Войти</button>
-                <button class="logout-btn" id="logoutBtn" onclick="logout()" style="display:none;">Выход</button>
+                <div id="userSection" style="display: none;" class="user-email">Email: <span id="userEmail"></span></div>
+                <button id="loginBtn" class="btn btn-primary" onclick="openAuthModal()">Войти</button>
+                <button id="logoutBtn" class="btn btn-logout" onclick="logout()" style="display: none;">Выход</button>
             </div>
         </nav>
     </header>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Вход</h2>
+                <button class="modal-close" onclick="closeAuthModal()">✕</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('login')">Вход</button>
+                <button class="tab" onclick="switchTab('register')">Регистрация</button>
+            </div>
+
+            <!-- Login Tab -->
+            <div id="loginTab" class="tab-content active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Пароль</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <div id="loginError" class="form-error"></div>
+                    <button type="submit" class="form-submit">Войти</button>
+                </form>
+            </div>
+
+            <!-- Register Tab -->
+            <div id="registerTab" class="tab-content">
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Пароль</label>
+                        <input type="password" id="registerPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword2">Повторите пароль</label>
+                        <input type="password" id="registerPassword2" required>
+                    </div>
+                    <div id="registerError" class="form-error"></div>
+                    <button type="submit" class="form-submit">Зарегистрироваться</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <section class="logo-section">
         <img src="/static/logo.png" alt="KastikCars">
@@ -713,14 +749,19 @@
         <h1>Оценить повреждение авто за 3 секунды</h1>
         <p style="font-size: 1rem; opacity: 0.8;">Вместо часа работы эксперта — одна фотография. REST API для автоматической детекции повреждений.</p>
         <div class="hero-buttons">
-            <button class="btn btn-primary" onclick="tryNow()">Попробовать бесплатно</button>
+            <button class="btn btn-primary" onclick="handleTryFree()">Попробовать бесплатно</button>
             <button class="btn btn-secondary" onclick="alert('Документация API')">Документация</button>
         </div>
     </section>
 
     <section id="demo" class="container">
-        <div class="demo-section" id="demoSection">
-            <h2>Попробовать прямо сейчас</h2>
+        <div id="demoSection" class="demo-section">
+            <div class="demo-header">
+                <h2>Попробовать прямо сейчас</h2>
+                <div class="requests-info">
+                    Осталось анализов: <strong id="requestsRemaining">10</strong>
+                </div>
+            </div>
             <div class="upload-area" id="uploadArea">
                 <input type="file" id="fileInput" accept="image/*">
                 <div class="upload-area-content">
@@ -735,11 +776,11 @@
                 <div class="spinner"></div>
                 <p>Анализирую фото...</p>
             </div>
-            <div class="error-message" id="errorMessage"></div>
+            <div id="errorMessage" class="error-message"></div>
             <div id="canvasContainer">
                 <canvas id="resultCanvas"></canvas>
             </div>
-            <div class="legend" id="legend">
+            <div id="legend" class="legend">
                 <h3>Найденные повреждения:</h3>
                 <div id="legendContent"></div>
             </div>
@@ -757,7 +798,7 @@
                     <li>Web interface</li>
                     <li class="disabled">API доступ</li>
                 </ul>
-                <button class="btn btn-primary">Начать</button>
+                <button class="btn btn-primary" disabled>Ваш текущий план</button>
             </div>
             <div class="pricing-card popular">
                 <div style="color: #5b7cfa; font-size: 0.85rem; margin-bottom: 1rem;">Популярный</div>
@@ -842,11 +883,11 @@
                 <div class="code-example"><span class="keyword">import</span> requests
 
 API_URL = <span class="string">"https://api.example.com/api/detect"</span>
-API_KEY = <span class="string">"test-free-key"</span>
+session_token = <span class="string">"YOUR_SESSION_TOKEN"</span>
 
 <span class="keyword">with</span> <span class="function">open</span>(<span class="string">"car.jpg"</span>, <span class="string">"rb"</span>) <span class="keyword">as</span> f:
     files = {<span class="string">"file"</span>: f}
-    headers = {<span class="string">"X-API-Key"</span>: API_KEY}
+    headers = {<span class="string">"Authorization"</span>: session_token}
     response = requests.<span class="function">post</span>(API_URL, files=files, headers=headers)
 
 data = response.<span class="function">json</span>()
@@ -859,7 +900,7 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
 
 <span class="function">fetch</span>(<span class="string">"https://api.example.com/api/detect"</span>, {
   method: <span class="string">"POST"</span>,
-  headers: {<span class="string">"X-API-Key"</span>: <span class="string">"test-free-key"</span>},
+  headers: {<span class="string">"Authorization"</span>: sessionToken},
   body: form
 })
 .<span class="function">then</span>(r => r.<span class="function">json</span>())
@@ -868,7 +909,7 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
             <div style="margin-top: 1.5rem;">
                 <h3>🔧 cURL</h3>
                 <div class="code-example">curl -X POST <span class="string">"https://api.example.com/api/detect"</span> \
-  -H <span class="string">"X-API-Key: test-free-key"</span> \
+  -H <span class="string">"Authorization: YOUR_SESSION_TOKEN"</span> \
   -F <span class="string">"file=@car.jpg"</span></div>
             </div>
         </div>
@@ -879,62 +920,13 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
         <p>API для детекции повреждений автомобилей</p>
     </footer>
 
-    <!-- Auth Modal -->
-    <div class="modal" id="authModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Аккаунт</h2>
-                <button class="modal-close" onclick="closeAuthModal()">×</button>
-            </div>
-
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('login')">Вход</button>
-                <button class="tab-btn" onclick="switchTab('register')">Регистрация</button>
-            </div>
-
-            <!-- Login Tab -->
-            <div id="login" class="tab-content active">
-                <div class="form-group">
-                    <label>API Key</label>
-                    <input type="password" id="loginApiKey" placeholder="sk_...">
-                </div>
-                <button class="form-submit" onclick="handleLogin()">Войти</button>
-                <div class="form-message" id="loginMessage"></div>
-            </div>
-
-            <!-- Register Tab -->
-            <div id="register" class="tab-content">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="registerEmail" placeholder="your@email.com">
-                </div>
-                <button class="form-submit" onclick="handleRegister()">Зарегистрироваться</button>
-                <div class="form-message" id="registerMessage"></div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const API_BASE_URL = 'https://car-damage-api-production.up.railway.app';
-        const API_KEY_STORAGE = 'kastik_api_key';
-        const USER_EMAIL_STORAGE = 'kastik_user_email';
+        // ==================== STATE ====================
+        let sessionToken = localStorage.getItem('sessionToken');
+        let userEmail = localStorage.getItem('userEmail');
+        let currentUser = null;
 
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const imagePreview = document.getElementById('imagePreview');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const loading = document.getElementById('loading');
-        const errorMessage = document.getElementById('errorMessage');
-        const canvasContainer = document.getElementById('canvasContainer');
-        const resultCanvas = document.getElementById('resultCanvas');
-        const legend = document.getElementById('legend');
-        const legendContent = document.getElementById('legendContent');
-        const demoSection = document.getElementById('demoSection');
-        const authModal = document.getElementById('authModal');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const userInfo = document.getElementById('userInfo');
-
+        const API_URL = window.location.origin;
         const damageColors = {
             'door': '#FF1744',
             'lamp': '#00E5FF',
@@ -952,155 +944,206 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
             'undamaged': '#76FF03'
         };
 
-        // === Auth Functions ===
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionToken) {
+                loadUserData();
+            }
+            setupUploadArea();
+            setupAnalyzeBtn();
+        });
+
+        // ==================== AUTH ====================
         function openAuthModal() {
-            authModal.classList.add('show');
-            document.body.style.overflow = 'hidden';
+            document.getElementById('authModal').classList.add('active');
         }
 
         function closeAuthModal() {
-            authModal.classList.remove('show');
-            document.body.style.overflow = 'auto';
-            document.getElementById('loginMessage').textContent = '';
-            document.getElementById('registerMessage').textContent = '';
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('registerError').textContent = '';
         }
 
         function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
             event.target.classList.add('active');
-        }
-
-        async function handleLogin() {
-            const apiKey = document.getElementById('loginApiKey').value.trim();
-            const messageDiv = document.getElementById('loginMessage');
-
-            if (!apiKey) {
-                messageDiv.textContent = 'Введите API Key';
-                messageDiv.classList.add('error');
-                messageDiv.classList.remove('success');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/usage/${apiKey}`);
-                if (!response.ok) throw new Error('Invalid API Key');
-
-                const data = await response.json();
-                localStorage.setItem(API_KEY_STORAGE, apiKey);
-                localStorage.setItem(USER_EMAIL_STORAGE, '');
-
-                messageDiv.textContent = 'Вход успешен!';
-                messageDiv.classList.add('success');
-                messageDiv.classList.remove('error');
-
-                setTimeout(() => {
-                    closeAuthModal();
-                    updateAuthUI();
-                }, 500);
-            } catch (error) {
-                messageDiv.textContent = 'Ошибка: неверный API Key';
-                messageDiv.classList.add('error');
-                messageDiv.classList.remove('success');
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            if (tab === 'login') {
+                document.getElementById('modalTitle').textContent = 'Вход';
+            } else {
+                document.getElementById('modalTitle').textContent = 'Регистрация';
             }
         }
 
-        async function handleRegister() {
-            const email = document.getElementById('registerEmail').value.trim();
-            const messageDiv = document.getElementById('registerMessage');
-
-            if (!email) {
-                messageDiv.textContent = 'Введите email';
-                messageDiv.classList.add('error');
-                messageDiv.classList.remove('success');
-                return;
-            }
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/register?email=${encodeURIComponent(email)}`, {
-                    method: 'POST'
+                const response = await fetch(API_URL + '/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `email=${email}&password=${password}`
                 });
 
-                if (!response.ok) throw new Error('Registration failed');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    errorDiv.textContent = data.detail || 'Ошибка входа';
+                    return;
+                }
+
+                sessionToken = data.session_token;
+                userEmail = data.email;
+                localStorage.setItem('sessionToken', sessionToken);
+                localStorage.setItem('userEmail', userEmail);
+
+                closeAuthModal();
+                loadUserData();
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+            } catch (error) {
+                errorDiv.textContent = 'Ошибка подключения: ' + error.message;
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const password2 = document.getElementById('registerPassword2').value;
+            const errorDiv = document.getElementById('registerError');
+
+            if (password !== password2) {
+                errorDiv.textContent = 'Пароли не совпадают';
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL + '/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `email=${email}&password=${password}`
+                });
 
                 const data = await response.json();
-                localStorage.setItem(API_KEY_STORAGE, data.api_key);
-                localStorage.setItem(USER_EMAIL_STORAGE, email);
 
-                messageDiv.textContent = `Успешно! Ваш API Key: ${data.api_key}`;
-                messageDiv.classList.add('success');
-                messageDiv.classList.remove('error');
+                if (!response.ok) {
+                    errorDiv.textContent = data.detail || 'Ошибка регистрации';
+                    return;
+                }
 
-                setTimeout(() => {
-                    closeAuthModal();
-                    updateAuthUI();
-                }, 1000);
+                sessionToken = data.session_token;
+                userEmail = data.email;
+                localStorage.setItem('sessionToken', sessionToken);
+                localStorage.setItem('userEmail', userEmail);
+
+                closeAuthModal();
+                loadUserData();
+                document.getElementById('registerEmail').value = '';
+                document.getElementById('registerPassword').value = '';
+                document.getElementById('registerPassword2').value = '';
             } catch (error) {
-                messageDiv.textContent = 'Ошибка регистрации';
-                messageDiv.classList.add('error');
-                messageDiv.classList.remove('success');
+                errorDiv.textContent = 'Ошибка подключения: ' + error.message;
+            }
+        }
+
+        async function loadUserData() {
+            try {
+                const response = await fetch(API_URL + '/api/me', {
+                    headers: { 'Authorization': sessionToken }
+                });
+
+                if (!response.ok) {
+                    // Token expired
+                    logout();
+                    return;
+                }
+
+                currentUser = await response.json();
+                updateUI();
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        function updateUI() {
+            if (currentUser) {
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('userSection').style.display = 'block';
+                document.getElementById('userEmail').textContent = currentUser.email;
+                document.getElementById('requestsRemaining').textContent = currentUser.requests_remaining || 0;
+                document.getElementById('demoSection').classList.add('visible');
+            } else {
+                document.getElementById('loginBtn').style.display = 'block';
+                document.getElementById('logoutBtn').style.display = 'none';
+                document.getElementById('userSection').style.display = 'none';
+                document.getElementById('demoSection').classList.remove('visible');
             }
         }
 
         function logout() {
-            localStorage.removeItem(API_KEY_STORAGE);
-            localStorage.removeItem(USER_EMAIL_STORAGE);
-            updateAuthUI();
+            sessionToken = null;
+            userEmail = null;
+            currentUser = null;
+            localStorage.removeItem('sessionToken');
+            localStorage.removeItem('userEmail');
+            updateUI();
         }
 
-        function updateAuthUI() {
-            const apiKey = localStorage.getItem(API_KEY_STORAGE);
-            const email = localStorage.getItem(USER_EMAIL_STORAGE);
-
-            if (apiKey) {
-                loginBtn.style.display = 'none';
-                logoutBtn.style.display = 'block';
-                userInfo.style.display = 'block';
-                userInfo.textContent = email || apiKey.substring(0, 10) + '...';
-                demoSection.classList.add('authorized');
-            } else {
-                loginBtn.style.display = 'block';
-                logoutBtn.style.display = 'none';
-                userInfo.style.display = 'none';
-                demoSection.classList.remove('authorized');
-            }
-        }
-
-        function tryNow() {
-            if (!localStorage.getItem(API_KEY_STORAGE)) {
+        function handleTryFree() {
+            if (!sessionToken) {
                 openAuthModal();
             } else {
                 scrollToSection('demo');
             }
         }
 
-        // === Upload & Analysis Functions ===
-        uploadArea.addEventListener('click', () => fileInput.click());
+        // ==================== UPLOAD & ANALYZE ====================
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const legend = document.getElementById('legend');
+        const legendContent = document.getElementById('legendContent');
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                showPreview(e.target.files[0]);
-            }
-        });
+        function setupUploadArea() {
+            uploadArea.addEventListener('click', () => fileInput.click());
 
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    showPreview(e.target.files[0]);
+                }
+            });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files;
-                showPreview(e.dataTransfer.files[0]);
-            }
-        });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    showPreview(e.dataTransfer.files[0]);
+                }
+            });
+        }
 
         function showPreview(file) {
             const reader = new FileReader();
@@ -1109,50 +1152,41 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                 uploadArea.classList.add('has-image');
                 analyzeBtn.style.display = 'block';
                 canvasContainer.style.display = 'none';
-                legend.style.display = 'none';
-                errorMessage.style.display = 'none';
+                legend.classList.remove('visible');
+                errorMessage.classList.remove('visible');
             };
             reader.readAsDataURL(file);
         }
 
-        analyzeBtn.addEventListener('click', analyzeImage);
+        function setupAnalyzeBtn() {
+            analyzeBtn.addEventListener('click', analyzeImage);
+        }
 
         async function analyzeImage() {
-            if (!fileInput.files[0]) return;
-
-            const apiKey = localStorage.getItem(API_KEY_STORAGE);
-            if (!apiKey) {
-                showError('API Key не найден. Пожалуйста, войдите');
-                return;
-            }
+            if (!fileInput.files[0] || !sessionToken) return;
 
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
             loading.style.display = 'block';
             analyzeBtn.disabled = true;
-            errorMessage.style.display = 'none';
+            errorMessage.classList.remove('visible');
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/detect`, {
+                const response = await fetch(API_URL + '/api/detect', {
                     method: 'POST',
-                    headers: {
-                        'X-API-Key': apiKey
-                    },
+                    headers: { 'Authorization': sessionToken },
                     body: formData
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
+                    const error = await response.json();
+                    throw new Error(error.detail || `HTTP ${response.status}`);
                 }
 
                 const data = await response.json();
-
-                if (data.detections && Array.isArray(data.detections)) {
-                    drawResults(data.detections);
-                } else {
-                    throw new Error('Invalid API response format');
-                }
+                drawResults(data.detections);
+                loadUserData(); // Refresh request count
             } catch (error) {
                 showError(error.message);
             } finally {
@@ -1199,7 +1233,6 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                 });
 
                 canvasContainer.style.display = 'block';
-                legend.style.display = 'block';
 
                 legendContent.innerHTML = '';
                 Object.entries(damages).forEach(([className, count]) => {
@@ -1212,26 +1245,19 @@ form.<span class="function">append</span>(<span class="string">"file"</span>, fi
                         </div>
                     `;
                 });
+                legend.classList.add('visible');
             };
             img.src = imagePreview.src;
         }
 
         function showError(message) {
             errorMessage.textContent = '❌ Ошибка: ' + message;
-            errorMessage.style.display = 'block';
+            errorMessage.classList.add('visible');
         }
 
         function scrollToSection(id) {
             document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         }
-
-        // Close modal on outside click
-        authModal.addEventListener('click', (e) => {
-            if (e.target === authModal) closeAuthModal();
-        });
-
-        // Initialize auth UI on page load
-        updateAuthUI();
     </script>
 </body>
 </html>
