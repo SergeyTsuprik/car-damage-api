@@ -1,5 +1,3 @@
-# main.py (ПОЛНЫЙ КОД С ОБНОВЛЕНИЯМИ)
-
 from fastapi import FastAPI, File, UploadFile, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter
@@ -17,8 +15,7 @@ import os
 
 # ==================== DATABASE ====================
 from sqlalchemy import create_engine, Column, String, Integer, Float, DateTime, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 import secrets
 
 # Database Setup
@@ -60,9 +57,6 @@ class User(Base):
     # Reset info
     reset_date = Column(DateTime)  # когда сбросить used → 0
     created_at = Column(DateTime, default=datetime.utcnow)
-
-# Create tables
-Base.metadata.create_all(bind=engine)
 
 # ==================== FASTAPI SETUP ====================
 app = FastAPI(title="KastikCars API", version="1.0.0")
@@ -164,6 +158,19 @@ def get_user_by_api_key(api_key: str, db: Session):
         raise HTTPException(status_code=401, detail="Invalid API key")
     return user
 
+# ==================== STARTUP EVENT ====================
+
+@app.on_event("startup")
+async def startup_event():
+    """Инициализация БД при старте приложения"""
+    try:
+        logger.info("🔄 Инициализирую БД...")
+        Base.metadata.create_all(bind=engine)
+        logger.info("✅ БД инициализирована успешно!")
+    except Exception as e:
+        logger.error(f"❌ Ошибка при инициализации БД: {e}")
+        raise
+
 # ==================== HEALTH & INFO ====================
 
 @app.get("/health")
@@ -253,12 +260,13 @@ async def detect_damage(
             for box in result.boxes:
                 detections.append({
                     "class": result.names[int(box.cls)],
+                    "class_en": result.names[int(box.cls)],
                     "confidence": float(box.conf),
                     "bbox": {
-                        "x": float(box.xyxy[0][0]),
-                        "y": float(box.xyxy[0][1]),
-                        "width": float(box.xyxy[0][2] - box.xyxy[0][0]),
-                        "height": float(box.xyxy[0][3] - box.xyxy[0][1])
+                        "x1": float(box.xyxy[0][0]),
+                        "y1": float(box.xyxy[0][1]),
+                        "x2": float(box.xyxy[0][2]),
+                        "y2": float(box.xyxy[0][3])
                     }
                 })
     
